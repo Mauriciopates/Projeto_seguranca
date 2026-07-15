@@ -133,7 +133,7 @@ class EstadoDoSistema:
         self.modulos_encontrados = set()
         self.total_eventos_lidos = 0
         self.utilizadores = set()
-        self._cache = {}  # Limpa cache também
+        self._cache = {}  # Limpa cache tambem
 
 
 # ============================================================
@@ -172,23 +172,23 @@ ultima_leitura = None
 
 
 def _validar_configuracao():
-    """Valida as configurações necessárias"""
+    """Valida as configuracoes necessarias"""
     erros = []
 
     if not PASTA_LOGS.exists():
-        erros.append(f"Pasta de logs não encontrada: {PASTA_LOGS}")
+        erros.append(f"Pasta de logs nao encontrada: {PASTA_LOGS}")
 
     if not PASTA_RELATORIOS.exists():
         try:
             PASTA_RELATORIOS.mkdir(parents=True, exist_ok=True)
         except Exception as e:
-            erros.append(f"Não foi possível criar pasta de relatórios: {e}")
+            erros.append(f"Nao foi possivel criar pasta de relatorios: {e}")
 
     return erros
 
 
 def _determinar_tipo_evento(descricao, severidade):
-    """Determina o tipo de evento baseado na descrição"""
+    """Determina o tipo de evento baseado na descricao"""
     desc_lower = descricao.lower()
 
     # Palavras-chave para cada tipo (prioridade)
@@ -213,7 +213,7 @@ def _determinar_tipo_evento(descricao, severidade):
 
 
 def _extrair_usuario_da_descricao(descricao):
-    """Extrai nome de usuário da descrição usando regex otimizado"""
+    """Extrai nome de usuario da descricao usando regex otimizado"""
     patterns = [
         r"utilizador ['\"]([^'\"]+)['\"]",
         r"utilizador ([a-zA-Z0-9_]+)",
@@ -227,7 +227,7 @@ def _extrair_usuario_da_descricao(descricao):
 
 
 def _extrair_quem_executou(descricao):
-    """Extrai quem executou a ação (admin ou sistema)"""
+    """Extrai quem executou a acao (admin ou sistema)"""
     admin_match = re.search(r"por ['\"]([^'\"]+)['\"]", descricao)
     if admin_match:
         return admin_match.group(1)
@@ -237,13 +237,13 @@ def _extrair_quem_executou(descricao):
 
 
 def _identificar_palavras_chave(descricao, palavras):
-    """Verifica se alguma palavra da lista está na descrição"""
+    """Verifica se alguma palavra da lista esta na descricao"""
     return any(palavra in descricao for palavra in palavras)
 
 
 @lru_cache(maxsize=128)
 def _extrair_dados_evento_cached(descricao, modulo, tipo):
-    """Versão com cache da função de extração de dados"""
+    """Versao com cache da funcao de extracao de dados"""
     dados = {
         "tipo_autentica": "",
         "status_autentica": "",
@@ -325,7 +325,7 @@ def _processar_evento_usuario(
     detalhes_desativacao,
     detalhes_exclusao,
 ):
-    """Processa um evento para extrair informações de usuário"""
+    """Processa um evento para extrair informacoes de usuario"""
     if not isinstance(evento.payload, dict):
         return
 
@@ -361,7 +361,7 @@ def _processar_evento_usuario(
         dados["modulos"].add(modulo)
     dados["tipos_eventos"].add(evento.event_type)
 
-    # Verifica desativação
+    # Verifica desativacao
     palavras_desativacao = [
         "desativado",
         "desativada",
@@ -386,7 +386,7 @@ def _processar_evento_usuario(
                 "modulo": modulo,
             }
 
-    # Verifica exclusão
+    # Verifica exclusao
     palavras_exclusao = [
         "excluído",
         "excluida",
@@ -433,7 +433,7 @@ def abrir_arquivo_automaticamente(caminho):
             subprocess.run(["xdg-open", str(caminho)])
         return True
     except Exception as e:
-        print(f"   ⚠️ Nao foi possivel abrir automaticamente: {e}")
+        print(f"   Nao foi possivel abrir automaticamente: {e}")
         return False
 
 
@@ -455,7 +455,7 @@ def _extrair_dados_evento(descricao, modulo, tipo):
 
 
 def _parse_linha_log_analytics(linha):
-    # Regex mais flexível para capturar diferentes formatos
+    # Regex mais flexivel para capturar diferentes formatos
     padrao = r"(\d{4}-\d{2}-\d{2})\s+(\d{2}:\d{2}:\d{2})\s+\[(\w+)\]\s+MÓDULO\s+([^:]+):\s+(.+)"
     match = re.match(padrao, linha.strip())
 
@@ -466,7 +466,7 @@ def _parse_linha_log_analytics(linha):
         modulo = match.group(4).strip().upper()
         descricao = match.group(5).strip()
 
-        # Extração de utilizador - usar um único padrão mais abrangente
+        # Extracao de utilizador - usar um unico padrao mais abrangente
         user_match = re.search(
             r"utilizador\s*['\"]?([a-zA-Z0-9_]+)['\"]?", descricao, re.IGNORECASE
         )
@@ -551,7 +551,7 @@ def _parse_linha_log_alternativo(linha):
 
 
 def _exibir_relatorio_utilizadores(utilizadores):
-    """Exibe o relatório de utilizadores formatado"""
+    """Exibe o relatorio de utilizadores formatado"""
 
     # Separa por status
     utilizadores_ativos = [
@@ -574,18 +574,18 @@ def _exibir_relatorio_utilizadores(utilizadores):
     total_desativados = len(utilizadores_desativados)
     total_excluidos = len(utilizadores_excluidos)
 
-    print(f"\n📊 RESUMO:")
+    print(f"\nRESUMO:")
     print(f"   Total de utilizadores identificados: {total_utilizadores}")
-    print(f"   🟢 Ativos: {total_ativos}")
-    print(f"   🟡 Desativados: {total_desativados}")
-    print(f"   🔴 Excluidos: {total_excluidos}")
+    print(f"   Ativos: {total_ativos}")
+    print(f"   Desativados: {total_desativados}")
+    print(f"   Excluidos: {total_excluidos}")
     print("=" * 80)
 
     # ============================================================
     # UTILIZADORES ATIVOS
     # ============================================================
 
-    print(f"\n🟢 UTILIZADORES ATIVOS ({total_ativos}):")
+    print(f"\nUTILIZADORES ATIVOS ({total_ativos}):")
     print("-" * 80)
 
     if utilizadores_ativos:
@@ -613,7 +613,7 @@ def _exibir_relatorio_utilizadores(utilizadores):
     # UTILIZADORES DESATIVADOS
     # ============================================================
 
-    print(f"\n🟡 UTILIZADORES DESATIVADOS ({total_desativados}):")
+    print(f"\nUTILIZADORES DESATIVADOS ({total_desativados}):")
     print("-" * 80)
 
     if utilizadores_desativados:
@@ -639,7 +639,7 @@ def _exibir_relatorio_utilizadores(utilizadores):
     # UTILIZADORES EXCLUIDOS
     # ============================================================
 
-    print(f"\n🔴 UTILIZADORES EXCLUIDOS ({total_excluidos}):")
+    print(f"\nUTILIZADORES EXCLUIDOS ({total_excluidos}):")
     print("-" * 80)
 
     if utilizadores_excluidos:
@@ -662,10 +662,10 @@ def _exibir_relatorio_utilizadores(utilizadores):
         print("   Nenhum utilizador excluido encontrado.")
 
     print("\n" + "=" * 80)
-    print("\n📌 LEGENDA:")
-    print("   🟢 ATIVO - Utilizador que aparece nos logs (tem eventos registados)")
-    print("   🟡 DESATIVADO - Identificado por evento de desativacao no log")
-    print("   🔴 EXCLUIDO - Identificado por evento de exclusao no log")
+    print("\nLEGENDA:")
+    print("   ATIVO - Utilizador que aparece nos logs (tem eventos registados)")
+    print("   DESATIVADO - Identificado por evento de desativacao no log")
+    print("   EXCLUIDO - Identificado por evento de exclusao no log")
 
 
 def gerar_relatorio_utilizadores():
@@ -684,7 +684,7 @@ def gerar_relatorio_utilizadores():
         return
 
     print("\n" + "=" * 80)
-    print("  👥 RELATORIO DE UTILIZADORES - ATIVOS / DESATIVADOS / EXCLUIDOS")
+    print("  RELATORIO DE UTILIZADORES - ATIVOS / DESATIVADOS / EXCLUIDOS")
     print("=" * 80)
 
     utilizadores = {}
@@ -719,14 +719,14 @@ def gerar_relatorio_utilizadores():
         else:
             dados["status"] = "ATIVO"
 
-    # Exibe o relatório
+    # Exibe o relatorio
     _exibir_relatorio_utilizadores(utilizadores)
 
     # ============================================================
     # PERGUNTAR SE DESEJA EXPORTAR PDF
     # ============================================================
 
-    print("\n❓ Deseja exportar este relatorio para PDF?")
+    print("\nDeseja exportar este relatorio para PDF?")
     print("   [s] - Sim, exportar para PDF")
     print("   [n] - Nao, voltar ao menu")
 
@@ -744,7 +744,7 @@ def gerar_relatorio_utilizadores():
 
         exportar_relatorio_utilizadores_pdf(ativos, desativados_list, excluidos_list)
     else:
-        print("\n✅ Voltando ao menu...")
+        print("\nVoltando ao menu...")
 
 
 # ============================================================
@@ -774,7 +774,7 @@ def exportar_relatorio_utilizadores_pdf(
     nome_pdf = f"relatorio_utilizadores_{timestamp}.pdf"
     caminho_pdf = PASTA_RELATORIOS / nome_pdf
 
-    print(f"\n   📄 A gerar PDF do relatorio de utilizadores...")
+    print(f"\n   A gerar PDF do relatorio de utilizadores...")
 
     try:
         doc = SimpleDocTemplate(  # type: ignore
@@ -810,7 +810,7 @@ def exportar_relatorio_utilizadores_pdf(
         normal_style.fontSize = 9
 
         # CABECALHO
-        story.append(Paragraph("👥 RELATORIO DE UTILIZADORES", titulo_style))  # type: ignore
+        story.append(Paragraph("RELATORIO DE UTILIZADORES", titulo_style))  # type: ignore
         story.append(
             Paragraph(  # type: ignore
                 f"Gerado em: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}",
@@ -830,9 +830,9 @@ def exportar_relatorio_utilizadores_pdf(
         dados_resumo = [
             ["Metrica", "Quantidade"],
             ["Total de Utilizadores", str(total_geral)],
-            ["🟢 Ativos", str(total_ativos)],
-            ["🟡 Desativados", str(total_desativados)],
-            ["🔴 Excluidos", str(total_excluidos)],
+            ["Ativos", str(total_ativos)],
+            ["Desativados", str(total_desativados)],
+            ["Excluidos", str(total_excluidos)],
         ]
 
         tabela_resumo = Table(dados_resumo, colWidths=[6 * cm, 4 * cm])  # type: ignore
@@ -857,7 +857,7 @@ def exportar_relatorio_utilizadores_pdf(
         # UTILIZADORES ATIVOS
         # ============================================================
         if utilizadores_ativos:
-            story.append(Paragraph("🟢 UTILIZADORES ATIVOS", subtitulo_style))  # type: ignore
+            story.append(Paragraph("UTILIZADORES ATIVOS", subtitulo_style))  # type: ignore
             story.append(Spacer(1, 5))  # type: ignore
 
             dados_ativos = [["#", "Utilizador", "Total", "Ultimo Evento", "Modulos"]]
@@ -914,7 +914,7 @@ def exportar_relatorio_utilizadores_pdf(
         # UTILIZADORES DESATIVADOS
         # ============================================================
         if utilizadores_desativados:
-            story.append(Paragraph("🟡 UTILIZADORES DESATIVADOS", subtitulo_style))  # type: ignore
+            story.append(Paragraph("UTILIZADORES DESATIVADOS", subtitulo_style))  # type: ignore
             story.append(Spacer(1, 5))  # type: ignore
 
             dados_desativados = [
@@ -958,7 +958,7 @@ def exportar_relatorio_utilizadores_pdf(
         # ============================================================
         if utilizadores_excluidos:
             story.append(PageBreak())  # type: ignore
-            story.append(Paragraph("🔴 UTILIZADORES EXCLUIDOS", subtitulo_style))  # type: ignore
+            story.append(Paragraph("UTILIZADORES EXCLUIDOS", subtitulo_style))  # type: ignore
             story.append(Spacer(1, 5))  # type: ignore
 
             dados_excluidos = [
@@ -1009,18 +1009,18 @@ def exportar_relatorio_utilizadores_pdf(
 
         doc.build(story)
 
-        print(f"\n✅ PDF gerado com sucesso: {caminho_pdf.name}")
+        print(f"\nPDF gerado com sucesso: {caminho_pdf.name}")
         print(
-            f"   📊 {total_ativos} ativos, {total_desativados} desativados, {total_excluidos} excluidos"
+            f"   {total_ativos} ativos, {total_desativados} desativados, {total_excluidos} excluidos"
         )
-        print(f"   📂 Local: {caminho_pdf}")
+        print(f"   Local: {caminho_pdf}")
 
         # Abre o PDF automaticamente
-        print("\n   📂 A abrir PDF automaticamente...")
+        print("\n   A abrir PDF automaticamente...")
         if abrir_arquivo_automaticamente(caminho_pdf):
-            print("   ✅ PDF aberto com sucesso!")
+            print("   PDF aberto com sucesso!")
         else:
-            print(f"   📂 O PDF esta em: {caminho_pdf}")
+            print(f"   O PDF esta em: {caminho_pdf}")
 
     except Exception as e:
         print(f"[ERRO] Erro ao gerar PDF: {e}")
@@ -1037,7 +1037,7 @@ def exportar_relatorio_utilizadores_pdf(
 
 def debug_logs():
     """
-    Função de debug para verificar os eventos carregados
+    Funcao de debug para verificar os eventos carregados
     """
     global estado_sistema
 
@@ -1045,7 +1045,7 @@ def debug_logs():
         print("[ERRO] Nenhum evento carregado")
         return
 
-    print("\n🔍 DEBUG - Primeiros 30 eventos:")
+    print("\nDEBUG - Primeiros 30 eventos:")
     print("=" * 80)
 
     desativados = []
@@ -1066,11 +1066,11 @@ def debug_logs():
             print(f"{i+1:2}. [{tipo}] {modulo:15} | {user:25} | {desc[:60]}...")
 
     print("\n" + "=" * 80)
-    print(f"\n📊 UTILIZADORES DESATIVADOS ENCONTRADOS: {len(set(desativados))}")
+    print(f"\nUTILIZADORES DESATIVADOS ENCONTRADOS: {len(set(desativados))}")
     for user in set(desativados):
         print(f"   - {user}")
 
-    print(f"\n📊 UTILIZADORES EXCLUIDOS ENCONTRADOS: {len(set(excluidos))}")
+    print(f"\nUTILIZADORES EXCLUIDOS ENCONTRADOS: {len(set(excluidos))}")
     for user in set(excluidos):
         print(f"   - {user}")
 
@@ -1098,7 +1098,7 @@ def exportar_csv_com_selecao_modulo():
         return None
 
     print("\n" + "=" * 60)
-    print("  📊 EXPORTAR CSV - SELECAO DE MODULO")
+    print("  EXPORTAR CSV - SELECAO DE MODULO")
     print("=" * 60)
 
     modulos = estado_sistema.get_modulos()
@@ -1107,14 +1107,14 @@ def exportar_csv_com_selecao_modulo():
         print("[ERRO] Nenhum modulo encontrado!")
         return None
 
-    print("\n📋 MODULOS DISPONIVEIS:")
+    print("\nMODULOS DISPONIVEIS:")
     print("-" * 40)
     for i, mod in enumerate(modulos, 1):
         qtd = len(estado_sistema.eventos_por_modulo[mod])
         print(f"   {i:2}. {mod} - {qtd} eventos")
     print("-" * 40)
 
-    print("\n❓ Exportar CSV por modulo especifico?")
+    print("\nExportar CSV por modulo especifico?")
     print("   [s] - Sim, escolher um modulo")
     print("   [n] - Nao, exportar todos os eventos")
 
@@ -1123,7 +1123,7 @@ def exportar_csv_com_selecao_modulo():
     modulo_selecionado = None
 
     if opcao == "s":
-        print("\n📌 Selecione um modulo:")
+        print("\nSelecione um modulo:")
         print("   Digite o NUMERO ou o NOME do modulo")
 
         entrada = input("Modulo: ").strip()
@@ -1147,10 +1147,10 @@ def exportar_csv_com_selecao_modulo():
                 print(f"   Modulos disponiveis: {', '.join(modulos)}")
                 return None
 
-        print(f"\n✅ Exportando CSV para o modulo: {modulo_selecionado}")
+        print(f"\nExportando CSV para o modulo: {modulo_selecionado}")
 
     elif opcao == "n":
-        print("\n✅ Exportando todos os eventos...")
+        print("\nExportando todos os eventos...")
 
     else:
         print("[ERRO] Opcao invalida! Use 's' ou 'n'")
@@ -1170,7 +1170,7 @@ def exportar_csv_com_selecao_modulo():
 def gerar_csv(modulo_selecionado=None):
     """
     Gera o CSV com as colunas: ID, data_hora, status, modulo, observacao, utilizador
-    Usa vírgula como separador para melhor compatibilidade
+    Usa virgula como separador para melhor compatibilidade
     """
     global estado_sistema
 
@@ -1178,7 +1178,7 @@ def gerar_csv(modulo_selecionado=None):
         print("[ERRO] Nenhum evento para exportar!")
         return None
 
-    print("\n   📊 A gerar CSV...")
+    print("\n   A gerar CSV...")
 
     # Filtra eventos por modulo se selecionado
     if modulo_selecionado:
@@ -1221,7 +1221,7 @@ def gerar_csv(modulo_selecionado=None):
             # Observacao e utilizador
             observacao = descricao
 
-            # Se não tem utilizador, coloca "Desconhecido"
+            # Se nao tem utilizador, coloca "Desconhecido"
             if not utilizador:
                 utilizador = "Desconhecido"
 
@@ -1243,9 +1243,9 @@ def gerar_csv(modulo_selecionado=None):
         with open(caminho, "w", encoding="utf-8-sig", newline="") as f:
             writer = csv.writer(f, delimiter=",", quoting=csv.QUOTE_ALL)
 
-            # Cabeçalho com 6 colunas
+            # Cabecalho com 6 colunas
             writer.writerow(
-                ["ID", "Data/Hora", "Status", "Módulo", "Observação", "Utilizador"]
+                ["ID", "Data/Hora", "Status", "Modulo", "Observacao", "Utilizador"]
             )
 
             # Escreve dados
@@ -1261,18 +1261,18 @@ def gerar_csv(modulo_selecionado=None):
                     ]
                 )
 
-        print(f"\n✅ CSV gerado com sucesso: {caminho.name}")
-        print(f"   📊 {len(dados_exportar)} eventos exportados")
-        print(f"   📂 Local: {caminho}")
-        print(f"   🔧 Separador: vírgula (,)")
-        print(f"   📋 Colunas: ID, Data/Hora, Status, Módulo, Observação, Utilizador")
+        print(f"\nCSV gerado com sucesso: {caminho.name}")
+        print(f"   {len(dados_exportar)} eventos exportados")
+        print(f"   Local: {caminho}")
+        print(f"   Separador: virgula (,)")
+        print(f"   Colunas: ID, Data/Hora, Status, Modulo, Observacao, Utilizador")
 
         # Abre o CSV automaticamente
-        print("\n   📂 A abrir CSV automaticamente...")
+        print("\n   A abrir CSV automaticamente...")
         if abrir_arquivo_automaticamente(caminho):
-            print("   ✅ CSV aberto com sucesso!")
+            print("   CSV aberto com sucesso!")
         else:
-            print(f"   📂 O CSV esta em: {caminho}")
+            print(f"   O CSV esta em: {caminho}")
 
         return str(caminho)
 
@@ -1316,7 +1316,7 @@ def ler_logs_pasta():
     eventos = []
     total_linhas = 0
 
-    print(f"\n📂 Lendo logs da pasta: {pasta}")
+    print(f"\nLendo logs da pasta: {pasta}")
     print("=" * 60)
 
     for arquivo in arquivos:
@@ -1484,11 +1484,11 @@ def detalhar_eventos_por_modulo():
         print("=" * 70)
 
         total_eventos = len(estado_sistema.events)
-        print(f"\n📊 TOTAL GERAL: {total_eventos} eventos")
-        print(f"📋 MODULOS ENCONTRADOS: {len(modulos)}")
+        print(f"\nTOTAL GERAL: {total_eventos} eventos")
+        print(f"MODULOS ENCONTRADOS: {len(modulos)}")
 
         print("\n" + "-" * 70)
-        print("📈 RESUMO POR MODULO:")
+        print("RESUMO POR MODULO:")
         print("-" * 70)
         print(f"{'Modulo':<25} | {'Eventos':>8} | {'%':>6} | {'Ultimo Evento':<20}")
         print("-" * 70)
@@ -1510,10 +1510,10 @@ def detalhar_eventos_por_modulo():
             eventos = estado_sistema.eventos_por_modulo[modulo]
 
             print(f"\n{'='*70}")
-            print(f"📁 MODULO: {modulo}")
+            print(f"MODULO: {modulo}")
             print(f"{'='*70}")
 
-            print(f"\n📊 RESUMO DO MODULO {modulo}:")
+            print(f"\nRESUMO DO MODULO {modulo}:")
             print("-" * 50)
 
             severidades = {"CRITICAL": 0, "WARNING": 0, "INFO": 0}
@@ -1533,24 +1533,24 @@ def detalhar_eventos_por_modulo():
                         utilizadores.add(evento.payload["utilizador"])
 
             print(f"  Total de eventos: {len(eventos)}")
-            print(f"  🔴 CRITICAL: {severidades['CRITICAL']}")
-            print(f"  🟡 WARNING:  {severidades['WARNING']}")
-            print(f"  🔵 INFO:     {severidades['INFO']}")
+            print(f"  CRITICAL: {severidades['CRITICAL']}")
+            print(f"  WARNING:  {severidades['WARNING']}")
+            print(f"  INFO:     {severidades['INFO']}")
 
             if utilizadores:
-                print(f"  👤 Utilizadores envolvidos: {len(utilizadores)}")
+                print(f"  Utilizadores envolvidos: {len(utilizadores)}")
                 print(f"     {', '.join(list(utilizadores)[:5])}")
                 if len(utilizadores) > 5:
                     print(f"     ... e mais {len(utilizadores)-5} utilizadores")
 
             if tipos_eventos:
-                print(f"  📋 Tipos de evento mais comuns:")
+                print(f"  Tipos de evento mais comuns:")
                 for tipo, qtd in sorted(
                     tipos_eventos.items(), key=lambda x: x[1], reverse=True
                 )[:5]:
                     print(f"     - {tipo}: {qtd}")
 
-            print(f"\n📄 ULTIMOS EVENTOS DO MODULO {modulo} (últimos 10):")
+            print(f"\nULTIMOS EVENTOS DO MODULO {modulo} (ultimos 10):")
             print("-" * 50)
 
             for i, evento in enumerate(eventos[-10:], 1):
@@ -1565,7 +1565,7 @@ def detalhar_eventos_por_modulo():
 
                 linha = f"   {i:2}. {hora} | {evento.event_type:<12} | {descricao[:50]}"
                 if utilizador:
-                    linha += f" | 👤 {utilizador}"
+                    linha += f" | {utilizador}"
                 if severidade:
                     linha += f" | {severidade}"
                 print(linha)
@@ -1808,7 +1808,7 @@ def gerar_pdf_relatorio(modulo_selecionado=None):
         print("[ERRO] Nenhum evento carregado. Execute a leitura dos logs primeiro.")
         return None
 
-    print("\n📄 A gerar relatorio PDF...")
+    print("\nA gerar relatorio PDF...")
 
     dados = preparar_dados_para_graficos(modulo_selecionado)
 
@@ -1862,7 +1862,7 @@ def gerar_pdf_relatorio(modulo_selecionado=None):
         normal_style.fontSize = 10
 
         # CABECALHO
-        story.append(Paragraph("📊 RELATORIO ANALITICO DE SEGURANCA", titulo_style))  # type: ignore
+        story.append(Paragraph("RELATORIO ANALITICO DE SEGURANCA", titulo_style))  # type: ignore
         story.append(Spacer(1, 5))  # type: ignore
 
         if modulo_selecionado:
@@ -1883,7 +1883,7 @@ def gerar_pdf_relatorio(modulo_selecionado=None):
         story.append(Spacer(1, 10))  # type: ignore
 
         # RESUMO DO SISTEMA
-        story.append(Paragraph("📌 RESUMO DO SISTEMA", subtitulo_style))  # type: ignore
+        story.append(Paragraph("RESUMO DO SISTEMA", subtitulo_style))  # type: ignore
         story.append(Spacer(1, 5))  # type: ignore
 
         total_eventos = (
@@ -1922,7 +1922,7 @@ def gerar_pdf_relatorio(modulo_selecionado=None):
         story.append(Spacer(1, 15))  # type: ignore
 
         # SEVERIDADES
-        story.append(Paragraph("📈 DISTRIBUICAO POR SEVERIDADE", subtitulo_style))  # type: ignore
+        story.append(Paragraph("DISTRIBUICAO POR SEVERIDADE", subtitulo_style))  # type: ignore
         story.append(Spacer(1, 5))  # type: ignore
 
         sev = dados["severidades"]
@@ -1931,16 +1931,16 @@ def gerar_pdf_relatorio(modulo_selecionado=None):
             dados_sev = [
                 ["Severidade", "Quantidade", "Percentual"],
                 [
-                    "🔴 CRITICAL",
+                    "CRITICAL",
                     str(sev["CRITICAL"]),
                     f"{sev['CRITICAL']/total_sev*100:.1f}%",
                 ],
                 [
-                    "🟡 WARNING",
+                    "WARNING",
                     str(sev["WARNING"]),
                     f"{sev['WARNING']/total_sev*100:.1f}%",
                 ],
-                ["🔵 INFO", str(sev["INFO"]), f"{sev['INFO']/total_sev*100:.1f}%"],
+                ["INFO", str(sev["INFO"]), f"{sev['INFO']/total_sev*100:.1f}%"],
             ]
 
             tabela_sev = Table(dados_sev, colWidths=[3 * cm, 3 * cm, 3 * cm])  # type: ignore
@@ -1974,7 +1974,7 @@ def gerar_pdf_relatorio(modulo_selecionado=None):
         # TOP TIPOS DE EVENTO
         if dados["tipos"]:
             story.append(PageBreak())  # type: ignore
-            story.append(Paragraph("📋 TOP 5 TIPOS DE EVENTO", subtitulo_style))  # type: ignore
+            story.append(Paragraph("TOP 5 TIPOS DE EVENTO", subtitulo_style))  # type: ignore
             story.append(Spacer(1, 5))  # type: ignore
 
             top_tipos = sorted(
@@ -2004,7 +2004,7 @@ def gerar_pdf_relatorio(modulo_selecionado=None):
 
         # ULTIMOS EVENTOS
         story.append(PageBreak())  # type: ignore
-        story.append(Paragraph("📄 ULTIMOS EVENTOS", subtitulo_style))  # type: ignore
+        story.append(Paragraph("ULTIMOS EVENTOS", subtitulo_style))  # type: ignore
         story.append(Spacer(1, 5))  # type: ignore
 
         if modulo_selecionado:
@@ -2066,14 +2066,14 @@ def gerar_pdf_relatorio(modulo_selecionado=None):
             except:
                 pass
 
-        print(f"\n✅ PDF gerado com sucesso: {caminho_pdf}")
+        print(f"\nPDF gerado com sucesso: {caminho_pdf}")
 
         # Abre o PDF automaticamente
-        print("   📂 A abrir PDF automaticamente...")
+        print("   A abrir PDF automaticamente...")
         if abrir_arquivo_automaticamente(caminho_pdf):
-            print("   ✅ PDF aberto com sucesso!")
+            print("   PDF aberto com sucesso!")
         else:
-            print(f"   📂 O PDF esta em: {caminho_pdf}")
+            print(f"   O PDF esta em: {caminho_pdf}")
 
         return str(caminho_pdf)
 
@@ -2185,7 +2185,7 @@ def gerar_relatorio_com_selecao_modulo():
         return
 
     print("\n" + "=" * 60)
-    print("  📊 GERAR RELATORIO PDF COM GRAFICOS")
+    print("  GERAR RELATORIO PDF COM GRAFICOS")
     print("=" * 60)
 
     modulos = estado_sistema.get_modulos()
@@ -2194,21 +2194,21 @@ def gerar_relatorio_com_selecao_modulo():
         print("[ERRO] Nenhum modulo encontrado!")
         return
 
-    print("\n📋 MODULOS DISPONIVEIS:")
+    print("\nMODULOS DISPONIVEIS:")
     print("-" * 40)
     for i, mod in enumerate(modulos, 1):
         qtd = len(estado_sistema.eventos_por_modulo[mod])
         print(f"   {i:2}. {mod} - {qtd} eventos")
     print("-" * 40)
 
-    print("\n❓ Gerar relatorio por modulo especifico?")
+    print("\nGerar relatorio por modulo especifico?")
     print("   [s] - Sim, escolher um modulo")
     print("   [n] - Nao, gerar relatorio geral")
 
     opcao = input("\nEscolha (s/n): ").strip().lower()
 
     if opcao == "s":
-        print("\n📌 Selecione um modulo:")
+        print("\nSelecione um modulo:")
         print("   Digite o NUMERO ou o NOME do modulo")
 
         entrada = input("Modulo: ").strip()
@@ -2234,11 +2234,11 @@ def gerar_relatorio_com_selecao_modulo():
                 print(f"   Modulos disponiveis: {', '.join(modulos)}")
                 return
 
-        print(f"\n✅ Gerando relatorio para o modulo: {modulo_selecionado}")
+        print(f"\nGerando relatorio para o modulo: {modulo_selecionado}")
         gerar_pdf_relatorio(modulo_selecionado)
 
     elif opcao == "n":
-        print("\n✅ Gerando relatorio geral do sistema...")
+        print("\nGerando relatorio geral do sistema...")
         gerar_pdf_relatorio()
 
     else:
@@ -2264,13 +2264,13 @@ def exportar_csv_simples():
 
 
 def _executar_relatorio_analitico():
-    """Executa a geração do relatório analítico"""
+    """Executa a geracao do relatorio analitico"""
     print("\n" + gerar_relatorio_analitico())
 
 
 def _reler_logs():
     """Reler os logs da pasta"""
-    print("\n📂 A reler logs da pasta...")
+    print("\nA reler logs da pasta...")
     ler_logs_pasta()
 
 
@@ -2281,7 +2281,7 @@ def _reler_logs():
 
 def menu():
     """
-    Menu principal - apenas as opções numeradas, com tratamento de erros
+    Menu principal - apenas as opcoes numeradas, com tratamento de erros
     """
     while True:
         try:
@@ -2292,11 +2292,11 @@ def menu():
             print(" 1. Consultar Sistema")
             print(" 2. Detalhar Eventos por Modulo")
             print(" 3. Gerar Relatorio Analitico (Texto)")
-            print(" 4. 📊 Gerar Relatorio PDF com Graficos")
-            print(" 5. 📊 Exportar CSV (com selecao de modulo)")
-            print(" 6. 📂 Reler Logs da Pasta")
-            print(" 7. 👥 Relatorio de Utilizadores")
-            print(" 8. 🔍 Debug - Verificar eventos carregados")
+            print(" 4. Gerar Relatorio PDF com Graficos")
+            print(" 5. Exportar CSV (com selecao de modulo)")
+            print(" 6. Reler Logs da Pasta")
+            print(" 7. Relatorio de Utilizadores")
+            print(" 8. Debug - Verificar eventos carregados")
             print(" 0. Sair")
             print("--------------------------------------------------")
 
@@ -2312,7 +2312,7 @@ def menu():
                 print("A sair...")
                 break
 
-            # Mapeamento de opções
+            # Mapeamento de opcoes
             opcoes = {
                 "1": consultar_sistema,
                 "2": detalhar_eventos_por_modulo,
@@ -2332,7 +2332,7 @@ def menu():
                 input("\nPress ENTER para continuar...")
 
         except KeyboardInterrupt:
-            print("\n\nOperação cancelada pelo usuário")
+            print("\n\nOperacao cancelada pelo usuario")
             continue
         except Exception as e:
             logging.error(f"Erro no menu: {e}")
@@ -2347,21 +2347,21 @@ def menu():
 
 def executar():
     """
-    Função principal de execução - TELA TOTALMENTE LIMPA
-    Apenas o menu é exibido, sem nenhuma informação de inicialização
+    Funcao principal de execucao - TELA TOTALMENTE LIMPA
+    Apenas o menu e exibido, sem nenhuma informacao de inicializacao
     """
-    # Valida configuração
+    # Valida configuracao
     erros = _validar_configuracao()
     if erros:
         for erro in erros:
             print(f"[AVISO] {erro}")
 
-    # Inicializa o estado do sistema em silêncio
+    # Inicializa o estado do sistema em silencio
     estado = EstadoDoSistema()
     inicializar(estado)
     ler_logs_pasta()
 
-    # Menu simplificado - apenas as opções
+    # Menu simplificado - apenas as opcoes
     menu()
 
 
