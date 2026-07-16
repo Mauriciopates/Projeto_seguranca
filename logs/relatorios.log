@@ -54,3 +54,8 @@
 2026-07-10 19:18:58,351 | INFO | Modulo de relatorios encerrado
 2026-07-11 21:13:02,467 | INFO | Modulo de relatorios encerrado
 2026-07-15 18:19:12,194 | INFO | Modulo de relatorios encerrado
+2026-07-15 19:25:06,811 | ERROR | Erro em consultar_sistema: 'tuple' object has no attribute 'event_type'
+2026-07-16 14:06:42,512 | ERROR | Erro em consultar_sistema: 'tuple' object has no attribute 'event_type'
+2026-07-16 14:19:50,838 | ERROR | Erro em consultar_sistema: 'tuple' object has no attribute 'event_type'
+2026-07-16 14:50:37,619 | ERROR | Erro em consultar_sistema: 'tuple' object has no attribute 'event_type'
+2026-07-16 15:13:07,112 | ERROR | Erro em consultar_sistema: 'tuple' object has no attribute 'event_type'
