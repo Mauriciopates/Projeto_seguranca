@@ -1,27 +1,18 @@
-# ============================================================
-# INTERFACE RELATORIOS - VERSÃO COMPLETA CORRIGIDA
-# ============================================================
-# TODOS OS EVENTOS SÃO OBJETOS Evento - SEM TUPLAS!
-# ============================================================
-
 import sys
 import os
 import re
 import csv
-import json
 import logging
-import hashlib
 import subprocess
 import io
 import threading
 import traceback
-import time
 from pathlib import Path
-from datetime import datetime, timedelta
+from datetime import datetime
 from collections import defaultdict
 from functools import lru_cache
 from tkinter import * # type: ignore
-from tkinter import ttk, scrolledtext, messagebox, simpledialog
+from tkinter import scrolledtext, messagebox, simpledialog
 from contextlib import redirect_stdout
 from typing import Self
 
@@ -73,30 +64,22 @@ except ImportError:
     print("[AVISO] Matplotlib nao instalado. Execute: pip install matplotlib")
 
 # ============================================================
-# CONFIGURACAO
+# CONFIGURACAO DE CAMINHOS
 # ============================================================
 
-PASTA_LOGS = Path(r"C:\Users\mauri\Desktop\Projeto_seguranca\logs")
-PASTA_RELATORIOS = Path(__file__).parent / "relatorios_exportacao"
+# Caminho deve de ser alterado na integração, está a ler a pasta em zip
+# 1. Caminho base do projeto
+
+DIRETORIO_BASE = Path(__file__).resolve().parent
+
+PASTA_LOGS = DIRETORIO_BASE / "logs"
+PASTA_RELATORIOS = DIRETORIO_BASE / "relatorios_exportacao"
+
+PASTA_LOGS.mkdir(parents=True, exist_ok=True)
 PASTA_RELATORIOS.mkdir(parents=True, exist_ok=True)
 
 
-def configurar_logging():
-    if not PASTA_LOGS.exists():
-        PASTA_LOGS.mkdir(parents=True, exist_ok=True)
-    ficheiro_log = PASTA_LOGS / "relatorios.log"
-    if not logging.getLogger().handlers:
-        logging.basicConfig(
-            level=logging.INFO,
-            format="%(asctime)s | %(levelname)s | %(message)s",
-            handlers=[
-                logging.FileHandler(ficheiro_log, encoding="utf-8"),
-                logging.StreamHandler(),
-            ],
-        )
 
-
-configurar_logging()
 
 # ============================================================
 # DEFINICAO DO ESTADO DO SISTEMA
@@ -1304,7 +1287,7 @@ class RelatorioConsulta(RelatorioBase):
             messagebox.showerror("Erro", f"Erro ao exportar PDF: {e}")
             traceback.print_exc()
 
-    def exportar_csv(self): * # type: ignore
+    def exportar_csv(self): # type: ignore
         try: # type: ignore
             self.parent._log_terminal("Iniciando exportacao CSV geral...", "INFO") # type: ignore
             if estado_sistema and estado_sistema.events:
