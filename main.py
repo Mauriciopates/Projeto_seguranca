@@ -1,6 +1,7 @@
 """
 main.py - Ponto de entrada da aplicação
 """
+
 import sys
 import os
 from pathlib import Path
@@ -21,6 +22,7 @@ def main():
     except Exception as e:
         print(f"Erro inesperado: {e}")
         import traceback
+
         traceback.print_exc()
 
 

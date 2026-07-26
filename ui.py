@@ -246,6 +246,12 @@ class RelatorioConsulta(RelatorioBase):
             if not eventos:
                 messagebox.showerror("Erro", "Nenhum evento carregado!")
                 return None
+            separador = self.parent._popup_escolher_separador()
+            if separador is None:
+                self.parent._log_terminal(
+                    "Exportacao CSV cancelada pelo usuario", "INFO"
+                )
+                return None
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             nome_arquivo = f"csv_todos_eventos_{timestamp}.csv"
             caminho = PASTA_RELATORIOS / nome_arquivo
@@ -284,7 +290,7 @@ class RelatorioConsulta(RelatorioBase):
                     }
                 )
             with open(caminho, "w", encoding="utf-8-sig", newline="") as f:
-                writer = csv.writer(f, delimiter=",", quoting=csv.QUOTE_ALL)
+                writer = csv.writer(f, delimiter=separador, quoting=csv.QUOTE_ALL)
                 writer.writerow(
                     ["ID", "Data/Hora", "Status", "Modulo", "Observacao", "Utilizador"]
                 )
@@ -438,6 +444,12 @@ class RelatorioDetalhes(RelatorioBase):
                     f"Nenhum evento encontrado para o modulo {modulo_selecionado}!",
                 )
                 return None
+            separador = self.parent._popup_escolher_separador()
+            if separador is None:
+                self.parent._log_terminal(
+                    "Exportacao CSV cancelada pelo usuario", "INFO"
+                )
+                return None
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             nome_arquivo = f"csv_{modulo_selecionado}_{timestamp}.csv"
             caminho = PASTA_RELATORIOS / nome_arquivo
@@ -476,7 +488,7 @@ class RelatorioDetalhes(RelatorioBase):
                     }
                 )
             with open(caminho, "w", encoding="utf-8-sig", newline="") as f:
-                writer = csv.writer(f, delimiter=",", quoting=csv.QUOTE_ALL)
+                writer = csv.writer(f, delimiter=separador, quoting=csv.QUOTE_ALL)
                 writer.writerow(
                     ["ID", "Data/Hora", "Status", "Modulo", "Observacao", "Utilizador"]
                 )
@@ -869,7 +881,7 @@ class RelatorioUtilizadores(RelatorioBase):
         return labels.get(status_filtro, "identificados")
 
     def exportar_csv(self):
-        """Exporta CSV APENAS com os dados dos utilizadores, separados por vírgula"""
+        """Exporta CSV APENAS com os dados dos utilizadores, com separador escolhido pelo usuario"""
         try:
             self.parent._log_terminal(
                 "Iniciando exportacao CSV de utilizadores...", "INFO"
@@ -923,12 +935,19 @@ class RelatorioUtilizadores(RelatorioBase):
                 )
                 return None
 
+            separador = self.parent._popup_escolher_separador()
+            if separador is None:
+                self.parent._log_terminal(
+                    "Exportacao CSV cancelada pelo usuario", "INFO"
+                )
+                return None
+
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             nome_arquivo = f"csv_utilizadores_{timestamp}.csv"
             caminho = PASTA_RELATORIOS / nome_arquivo
 
             with open(caminho, "w", encoding="utf-8-sig", newline="") as f:
-                writer = csv.writer(f, delimiter=",", quoting=csv.QUOTE_ALL)
+                writer = csv.writer(f, delimiter=separador, quoting=csv.QUOTE_ALL)
                 writer.writerow(cabecalho)
                 for linha in dados_tabela:
                     writer.writerow(linha)
@@ -1163,6 +1182,96 @@ class InterfaceRelatorios:
     # MÉTODOS DE EXPORTAÇÃO CSV
     # ============================================================
 
+    def _popup_escolher_separador(self):
+        """Pop-up pequeno para o usuario escolher o separador do CSV.
+
+        Retorna "," ou ";" conforme a escolha, ou None se o usuario cancelar.
+        """
+        resultado = {"separador": None}
+
+        largura, altura = 360, 240
+        popup = Toplevel(self.root)
+        popup.title("Separador do CSV")
+        popup.configure(bg=self.cores["bg_principal"])
+        popup.resizable(False, False)
+        popup.transient(self.root)
+        popup.grab_set()
+
+        popup.update_idletasks()
+        x = (popup.winfo_screenwidth() // 2) - (largura // 2)
+        y = (popup.winfo_screenheight() // 2) - (altura // 2)
+        popup.geometry(f"{largura}x{altura}+{x}+{y}")
+
+        Label(
+            popup,
+            text="Separador do CSV",
+            font=self.fontes["popup_titulo"],
+            fg=self.cores["texto_principal"],
+            bg=self.cores["bg_principal"],
+        ).pack(pady=(18, 4))
+
+        Label(
+            popup,
+            text="Como as colunas devem ser separadas\nno arquivo exportado?",
+            font=self.fontes["normal"],
+            fg=self.cores["texto_secundario"],
+            bg=self.cores["bg_principal"],
+            justify=LEFT,
+        ).pack(pady=(0, 14))
+
+        def escolher(separador):
+            resultado["separador"] = separador
+            popup.destroy()
+
+        botoes_frame = Frame(popup, bg=self.cores["bg_principal"])
+        botoes_frame.pack(pady=4)
+
+        Button(
+            botoes_frame,
+            text="Vírgula ( , )\nBrasil / EUA",
+            font=self.fontes["botao"],
+            bg=self.cores["bg_botao"],
+            fg="#ffffff",
+            activebackground=self.cores["bg_botao_hover"],
+            activeforeground="#ffffff",
+            relief=FLAT,
+            width=13,
+            height=2,
+            justify=LEFT,
+            cursor="hand2",
+            command=lambda: escolher(","),
+        ).pack(side=LEFT, padx=8)
+
+        Button(
+            botoes_frame,
+            text="Ponto e vírgula ( ; )\nEuropa e outros",
+            font=self.fontes["botao"],
+            bg=self.cores["bg_botao"],
+            fg="#ffffff",
+            activebackground=self.cores["bg_botao_hover"],
+            activeforeground="#ffffff",
+            relief=FLAT,
+            width=16,
+            height=2,
+            justify=LEFT,
+            cursor="hand2",
+            command=lambda: escolher(";"),
+        ).pack(side=LEFT, padx=8)
+
+        Button(
+            popup,
+            text="Cancelar",
+            font=self.fontes["normal"],
+            bg=self.cores["bg_principal"],
+            fg=self.cores["texto_secundario"],
+            relief=FLAT,
+            cursor="hand2",
+            command=popup.destroy,
+        ).pack(pady=(14, 0))
+
+        popup.wait_window()
+        return resultado["separador"]
+
     def _exportar_csv_popup(self, text_widget, titulo="relatorio"):
         """Exporta o conteúdo do popup para CSV"""
         try:
@@ -1172,8 +1281,13 @@ class InterfaceRelatorios:
                 messagebox.showerror("Erro", "Nenhum conteudo para exportar!")
                 return None
 
+            separador = self._popup_escolher_separador()
+            if separador is None:
+                self._log_terminal("Exportacao CSV cancelada pelo usuario", "INFO")
+                return None
+
             # Usa o exportacao.py
-            caminho = exportar_relatorio(conteudo, titulo, "csv")
+            caminho = exportar_relatorio(conteudo, titulo, "csv", separador=separador)
 
             if caminho:
                 self._log_terminal(f"CSV gerado com sucesso: {caminho.name}", "SUCESSO")

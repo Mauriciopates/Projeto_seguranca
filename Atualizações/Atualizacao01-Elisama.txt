@@ -1,0 +1,195 @@
+"""ATUALIZAÇÃO DO SISTEMA DE EXPORTAÇÃO CSV
+
+## Resumo da Alteração
+
+#Olá lindo,
+
+Estamos a atualizar o sistema de exportação de CSV para resolver o problema das barras "|" que aparecem nos arquivos gerados. A solução implementada agora gera o CSV a partir dos dados brutos (eventos) em vez do texto formatado da interface.
+
+
+## O que foi alterado?
+
+### 1. core.py (já atualizado)
+- Adicionada a chave "utilizadores" no retorno da função extrair_estatisticas()
+- Removidos limites de exibição: agora mostra TODOS os utilizadores e eventos
+
+### 2. exportacao.py (já atualizado)
+#- Nova função exportar_csv_dados() que exporta CSV a partir de dados brutos
+#- Nova função perguntar_separador() que pergunta ao usuário qual separador usar
+#- Função exportar_relatorio() atualizada para aceitar o parâmetro dados_brutos
+
+
+## O que precisas fazer no ui.py
+
+Nas classes de relatórios, substitui a função exportar_csv() pelo código abaixo:
+
+### 1. RelatorioConsulta.exportar_csv()
+
+def exportar_csv(self):
+    try:
+        self.parent._log_terminal("Iniciando exportacao CSV geral...", "INFO")
+        
+        if estado_sistema and estado_sistema.events:
+            eventos = estado_sistema.events
+        else:
+            eventos = self.parent.eventos
+        
+        if not eventos:
+            messagebox.showerror("Erro", "Nenhum evento carregado!")
+            return None
+        
+        from exportacao import exportar_relatorio
+        return exportar_relatorio(
+            None,
+            self.titulo,
+            "csv",
+            dados_brutos=eventos,
+            tipo_dados="eventos"
+        )
+        
+    except Exception as e:
+        self.parent._log_terminal(f"ERRO ao exportar CSV geral: {e}", "ERRO")
+        messagebox.showerror("Erro", f"Erro ao exportar CSV: {e}")
+        traceback.print_exc()
+        return None
+
+
+### 2. RelatorioDetalhes.exportar_csv()
+
+def exportar_csv(self):
+    try:
+        self.parent._log_terminal("Iniciando exportacao CSV por modulo...", "INFO")
+        
+        if not self.modulos_encontrados:
+            self._extrair_modulos_dos_eventos()
+        
+        if not self.modulos_encontrados:
+            messagebox.showerror("Erro", "Nenhum modulo encontrado para exportar!")
+            return None
+        
+        if estado_sistema and estado_sistema.events:
+            eventos = estado_sistema.events
+        else:
+            eventos = self.parent.eventos
+        
+        if not eventos:
+            messagebox.showerror("Erro", "Nenhum evento carregado!")
+            return None
+        
+        lista_modulos = "MODULOS ENCONTRADOS:\n"
+        for num, dados in self.modulos_encontrados.items():
+            lista_modulos += f"   {num}. {dados['nome']}: {dados['eventos']} eventos\n"
+        
+        modulo_num = simpledialog.askinteger(
+            "Selecionar Modulo",
+            f"{lista_modulos}\nDigite o numero do modulo para exportar:",
+            minvalue=1,
+            maxvalue=len(self.modulos_encontrados),
+        )
+        
+        if modulo_num is None:
+            self.parent._log_terminal("Exportacao cancelada pelo usuario", "INFO")
+            return None
+        
+        if modulo_num not in self.modulos_encontrados:
+            messagebox.showerror("Erro", "Numero de modulo invalido!")
+            return None
+        
+        modulo_selecionado = self.modulos_encontrados[modulo_num]["nome"]
+        self.parent._log_terminal(f"Modulo selecionado: {modulo_selecionado}", "INFO")
+        
+        eventos_filtrados = []
+        for evento in eventos:
+            payload = self.parent._get_payload(evento)
+            if payload:
+                modulo_evento = payload.get("modulo", "").upper()
+                if modulo_evento == modulo_selecionado:
+                    eventos_filtrados.append(evento)
+        
+        if not eventos_filtrados:
+            messagebox.showerror(
+                "Erro",
+                f"Nenhum evento encontrado para o modulo {modulo_selecionado}!",
+            )
+            return None
+        
+        from exportacao import exportar_relatorio
+        return exportar_relatorio(
+            None,
+            modulo_selecionado,
+            "csv",
+            dados_brutos=eventos_filtrados,
+            tipo_dados="eventos"
+        )
+        
+    except Exception as e:
+        self.parent._log_terminal(f"ERRO ao exportar CSV por modulo: {e}", "ERRO")
+        messagebox.showerror("Erro", f"Erro ao exportar CSV: {e}")
+        traceback.print_exc()
+        return None
+
+
+### 3. RelatorioUtilizadores.exportar_csv()
+
+def exportar_csv(self):
+    try:
+        self.parent._log_terminal("Iniciando exportacao CSV de utilizadores...", "INFO")
+        
+        if estado_sistema and estado_sistema.events:
+            eventos = estado_sistema.events
+        else:
+            eventos = self.parent.eventos
+        
+        if not eventos:
+            messagebox.showerror("Erro", "Nenhum evento carregado!")
+            return None
+        
+        from exportacao import exportar_relatorio
+        return exportar_relatorio(
+            None,
+            self.titulo,
+            "csv",
+            dados_brutos=eventos,
+            tipo_dados="utilizadores"
+        )
+        
+    except Exception as e:
+        self.parent._log_terminal(f"ERRO ao exportar CSV de utilizadores: {e}", "ERRO")
+        messagebox.showerror("Erro", f"Erro ao exportar CSV: {e}")
+        traceback.print_exc()
+        return None
+
+--
+
+## O que o utilizador vai ver?
+
+Ao exportar um CSV, aparece uma caixa de diálogo:
+
+Escolha o separador para o CSV:
+
+1 - Ponto e virgula (;) - Excel PT-BR/PT-PT
+2 - Virgula (,) - Excel EN-US/Internacional
+
+Digite 1 ou 2:
+
+Depois, o CSV é gerado com:
+- Nome do arquivo: eventos_ponto_virgula_20260725_191729.csv ou eventos_virgula_20260725_191729.csv
+- Separador: ; ou , conforme escolha
+- Dados limpos: sem barras "|"
+
+---
+
+## Arquivos Atualizados
+
+Os seguintes arquivos já estão atualizados e prontos para usar:
+
+- core.py - Atualizado com correções
+- exportacao.py - Atualizado com nova função de exportação
+
+---
+
+Lindo, esta solução é simples e mantém a interface intacta. Apenas mudamos a forma como os dados são passados para o exportador.
+
+Se tiveres dúvidas ou se algo não funcionar como esperado, podemos ver juntos uma solução, eu tentei várias formas, até briguei.
+
+Depois de resolvermos podemos eliminhar esse readme, criei só para falarmos e explicar a situação"""

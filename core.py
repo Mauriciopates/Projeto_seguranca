@@ -311,11 +311,11 @@ def inicializar(estado=None):
 
 
 # ============================================================
-# FUNÇÃO: consultar_sistema()
+# FUNÇÃO: consultar_sistema() - SEM LIMITES
 # ============================================================
 
 def consultar_sistema():
-    """Exibe consulta do sistema no console"""
+    """Exibe consulta do sistema no console (TODOS os utilizadores)"""
     global estado_sistema, ultima_leitura
 
     try:
@@ -348,10 +348,8 @@ def consultar_sistema():
         print("\n[UTILIZADORES]")
         utilizadores = estado_sistema.get_utilizadores()
         if utilizadores:
-            for i, user in enumerate(utilizadores[:10], 1):
+            for i, user in enumerate(utilizadores, 1):
                 print(f"  {i:2}. {user}")
-            if len(utilizadores) > 10:
-                print(f"  ... e mais {len(utilizadores)-10} utilizadores")
         else:
             print("  Nenhum utilizador identificado")
 
@@ -390,11 +388,11 @@ def consultar_sistema():
 
 
 # ============================================================
-# FUNÇÃO: detalhar_eventos_por_modulo()
+# FUNÇÃO: detalhar_eventos_por_modulo() - SEM LIMITES
 # ============================================================
 
 def detalhar_eventos_por_modulo():
-    """Exibe detalhamento de eventos por módulo no console"""
+    """Exibe detalhamento de eventos por módulo no console (TODOS OS EVENTOS)"""
     global estado_sistema
 
     try:
@@ -464,19 +462,17 @@ def detalhar_eventos_por_modulo():
 
             if utilizadores:
                 print(f"  Utilizadores envolvidos: {len(utilizadores)}")
-                print(f"     {', '.join(list(utilizadores)[:5])}")
-                if len(utilizadores) > 5:
-                    print(f"     ... e mais {len(utilizadores)-5} utilizadores")
+                print(f"     {', '.join(sorted(utilizadores))}")
 
             if tipos_eventos:
-                print(f"  Tipos de evento mais comuns:")
-                for tipo, qtd in sorted(tipos_eventos.items(), key=lambda x: x[1], reverse=True)[:5]:
+                print(f"  Tipos de evento:")
+                for tipo, qtd in sorted(tipos_eventos.items(), key=lambda x: x[1], reverse=True):
                     print(f"     - {tipo}: {qtd}")
 
-            print(f"\nULTIMOS EVENTOS DO MODULO {modulo} (ultimos 10):")
+            print(f"\nTODOS OS EVENTOS DO MODULO {modulo} (total: {len(eventos)}):")
             print("-" * 50)
 
-            for i, evento in enumerate(eventos[-10:], 1):
+            for i, evento in enumerate(eventos, 1):
                 hora = evento.timestamp.strftime("%H:%M:%S")
                 descricao = ""
                 severidade = ""
@@ -486,15 +482,12 @@ def detalhar_eventos_por_modulo():
                     severidade = evento.payload.get("severidade", "")
                     utilizador = evento.payload.get("utilizador", "")
 
-                linha = f"   {i:2}. {hora} | {evento.event_type:<12} | {descricao[:50]}"
+                linha = f"   {i:4}. {hora} | {evento.event_type:<12} | {descricao}"
                 if utilizador:
                     linha += f" | {utilizador}"
                 if severidade:
                     linha += f" | {severidade}"
                 print(linha)
-
-            if len(eventos) > 10:
-                print(f"   ... e mais {len(eventos) - 10} eventos")
 
         print("\n" + "=" * 70)
 
@@ -503,11 +496,11 @@ def detalhar_eventos_por_modulo():
 
 
 # ============================================================
-# FUNÇÃO: gerar_relatorio_analitico()
+# FUNÇÃO: gerar_relatorio_analitico() - SEM LIMITES
 # ============================================================
 
 def gerar_relatorio_analitico():
-    """Gera relatório analítico como string"""
+    """Gera relatório analítico como string (TODOS OS DADOS)"""
     global estado_sistema, ultima_leitura
 
     try:
@@ -543,10 +536,8 @@ def gerar_relatorio_analitico():
         linhas.append("-" * 40)
         utilizadores = estado_sistema.get_utilizadores()
         if utilizadores:
-            for user in utilizadores[:10]:
+            for user in utilizadores:
                 linhas.append(f"   - {user}")
-            if len(utilizadores) > 10:
-                linhas.append(f"   ... e mais {len(utilizadores)-10} utilizadores")
         else:
             linhas.append("   Nenhum utilizador identificado")
 
@@ -570,7 +561,7 @@ def gerar_relatorio_analitico():
                 if isinstance(evento.payload, dict):
                     modulo = evento.payload.get("modulo", "")
                     descricao = evento.payload.get("descricao", "")
-                linhas.append(f"   [{evento.event_type}] {hora} | {modulo} | {descricao[:50]}")
+                linhas.append(f"   [{evento.event_type}] {hora} | {modulo} | {descricao}")
         else:
             linhas.append("   Nenhum evento recente")
 
@@ -750,12 +741,17 @@ def extrair_utilizadores_dos_eventos(eventos):
     return utilizadores
 
 
+# ============================================================
+# FUNÇÃO: extrair_estatisticas()
+# ============================================================
+
 def extrair_estatisticas(eventos):
     """Extrai estatísticas básicas dos eventos"""
     modulos = {}
     critical = 0
     warning = 0
     info = 0
+    utilizadores = set()
 
     regex_modulo = re.compile(r"(AUTENTICACAO|BASE_DADOS|CAMARAS|SENSORES)", re.IGNORECASE)
     regex_critical = re.compile(r"\b(CRITICAL|CRITICO|CRIT|ERROR|ERRO)\b", re.IGNORECASE)
@@ -763,12 +759,16 @@ def extrair_estatisticas(eventos):
 
     for evento in eventos:
         evento_str = str(evento).upper()
-        evento_original = str(evento)
 
         mod_match = regex_modulo.search(evento_str)
         if mod_match:
             modulo = mod_match.group(1).upper()
             modulos[modulo] = modulos.get(modulo, 0) + 1
+
+        if hasattr(evento, 'payload') and isinstance(evento.payload, dict):
+            user = evento.payload.get("utilizador")
+            if user:
+                utilizadores.add(user)
 
         if regex_critical.search(evento_str):
             critical += 1
@@ -779,6 +779,7 @@ def extrair_estatisticas(eventos):
 
     return {
         "modulos": modulos,
+        "utilizadores": utilizadores,
         "critical": critical,
         "warning": warning,
         "info": info,
