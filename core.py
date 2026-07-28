@@ -278,6 +278,10 @@ def ler_logs_pasta(estado=None):
     if estado:
         estado._cache.clear()
 
+    # Atualiza a variável global estado_sistema
+    if estado is not None:
+        estado_sistema = estado
+
     return eventos
 
 
@@ -311,11 +315,11 @@ def inicializar(estado=None):
 
 
 # ============================================================
-# FUNÇÃO: consultar_sistema() - SEM LIMITES
+# FUNÇÃO: consultar_sistema() - ATUALIZADA COM 10 ÚLTIMOS EVENTOS
 # ============================================================
 
 def consultar_sistema():
-    """Exibe consulta do sistema no console (TODOS os utilizadores)"""
+    """Exibe consulta do sistema no console com os 10 últimos eventos"""
     global estado_sistema, ultima_leitura
 
     try:
@@ -345,13 +349,34 @@ def consultar_sistema():
         else:
             print("  Nenhum modulo identificado")
 
-        print("\n[UTILIZADORES]")
-        utilizadores = estado_sistema.get_utilizadores()
-        if utilizadores:
-            for i, user in enumerate(utilizadores, 1):
-                print(f"  {i:2}. {user}")
+        # ============================================================
+        # SUBSTITUÍDO: [UTILIZADORES] → [ULTIMOS 10 EVENTOS]
+        # ============================================================
+        print("\n[ULTIMOS 10 EVENTOS]")
+        ultimos = estado_sistema.ultimos_eventos(10)
+        if ultimos:
+            # Cabeçalho da tabela
+            print("  " + "-" * 80)
+            print(f"  {'Data/Hora':<20} | {'Tipo':<12} | {'Modulo':<15} | {'Severidade':<10} | {'Utilizador':<15} | {'Descricao':<30}")
+            print("  " + "-" * 80)
+            # Lista os eventos do mais antigo para o mais recente
+            for evento in reversed(ultimos):
+                hora = evento.timestamp.strftime("%Y-%m-%d %H:%M:%S")
+                tipo = evento.event_type if hasattr(evento, 'event_type') else "EVENTO"
+                modulo = ""
+                descricao = ""
+                severidade = ""
+                utilizador = ""
+                if isinstance(evento.payload, dict):
+                    modulo = evento.payload.get("modulo", "")[:15]
+                    descricao = evento.payload.get("descricao", "")[:30]
+                    severidade = evento.payload.get("severidade", "")
+                    utilizador = evento.payload.get("utilizador", "")[:15]
+                print(f"  {hora:<20} | {tipo:<12} | {modulo:<15} | {severidade:<10} | {utilizador:<15} | {descricao}")
+            print("  " + "-" * 80)
+            print(f"  Total de eventos exibidos: {len(ultimos)}")
         else:
-            print("  Nenhum utilizador identificado")
+            print("  Nenhum evento recente")
 
         print("\n[EVENTOS POR TIPO]")
         eventos_por_tipo = estado_sistema.contar_eventos_por_tipo()
@@ -363,24 +388,6 @@ def consultar_sistema():
         else:
             print("  Nenhum evento registado")
 
-        print("\n[ULTIMOS EVENTOS]")
-        ultimos = estado_sistema.ultimos_eventos(5)
-        if ultimos:
-            for evento in ultimos:
-                hora = evento.timestamp.strftime("%H:%M:%S")
-                modulo = ""
-                descricao = ""
-                severidade = ""
-                if isinstance(evento.payload, dict):
-                    modulo = evento.payload.get("modulo", "")
-                    descricao = evento.payload.get("descricao", "")
-                    severidade = evento.payload.get("severidade", "")
-                print(
-                    f"  [{evento.event_type}] {hora} | {modulo} | {descricao[:50]} | {severidade}"
-                )
-        else:
-            print("  Nenhum evento recente")
-
         print("\n" + "=" * 60)
 
     except Exception as e:
@@ -388,11 +395,11 @@ def consultar_sistema():
 
 
 # ============================================================
-# FUNÇÃO: detalhar_eventos_por_modulo() - SEM LIMITES
+# FUNÇÃO: detalhar_eventos_por_modulo()
 # ============================================================
 
 def detalhar_eventos_por_modulo():
-    """Exibe detalhamento de eventos por módulo no console (TODOS OS EVENTOS)"""
+    """Exibe detalhamento de eventos por módulo no console (APENAS RESUMO)"""
     global estado_sistema
 
     try:
@@ -462,32 +469,22 @@ def detalhar_eventos_por_modulo():
 
             if utilizadores:
                 print(f"  Utilizadores envolvidos: {len(utilizadores)}")
-                print(f"     {', '.join(sorted(utilizadores))}")
+                utilizadores_ordenados = sorted(utilizadores)
+                colunas = 4
+                largura_coluna = 22
+                for i in range(0, len(utilizadores_ordenados), colunas):
+                    linha_colunas = utilizadores_ordenados[i:i+colunas]
+                    linha_formatada = "     " + "".join([f"{u:<{largura_coluna}}" for u in linha_colunas])
+                    print(linha_formatada)
+                if len(utilizadores_ordenados) > 20:
+                    print(f"     ... total de {len(utilizadores_ordenados)} utilizadores")
+            else:
+                print("  Nenhum utilizador envolvido")
 
             if tipos_eventos:
-                print(f"  Tipos de evento:")
+                print(f"\n  Tipos de evento:")
                 for tipo, qtd in sorted(tipos_eventos.items(), key=lambda x: x[1], reverse=True):
                     print(f"     - {tipo}: {qtd}")
-
-            print(f"\nTODOS OS EVENTOS DO MODULO {modulo} (total: {len(eventos)}):")
-            print("-" * 50)
-
-            for i, evento in enumerate(eventos, 1):
-                hora = evento.timestamp.strftime("%H:%M:%S")
-                descricao = ""
-                severidade = ""
-                utilizador = ""
-                if isinstance(evento.payload, dict):
-                    descricao = evento.payload.get("descricao", "")
-                    severidade = evento.payload.get("severidade", "")
-                    utilizador = evento.payload.get("utilizador", "")
-
-                linha = f"   {i:4}. {hora} | {evento.event_type:<12} | {descricao}"
-                if utilizador:
-                    linha += f" | {utilizador}"
-                if severidade:
-                    linha += f" | {severidade}"
-                print(linha)
 
         print("\n" + "=" * 70)
 
@@ -496,7 +493,7 @@ def detalhar_eventos_por_modulo():
 
 
 # ============================================================
-# FUNÇÃO: gerar_relatorio_analitico() - SEM LIMITES
+# FUNÇÃO: gerar_relatorio_analitico()
 # ============================================================
 
 def gerar_relatorio_analitico():
