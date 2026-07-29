@@ -1,7 +1,7 @@
-RELATORIOS.PY v2.0.3- SISTEMA DE GERACAO DE RELATORIOS
+RELATORIOS.PY v2.0.2- SISTEMA DE GERACAO DE RELATORIOS
 
 
-Atualização da versão v2.0.3:
+Atualização da versão v2.0.2:
 
 - Criação do README.txt 
 - Informação do caminho dos LOGS no README
