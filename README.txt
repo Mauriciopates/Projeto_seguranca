@@ -75,12 +75,26 @@ py -m pip install reportlab matplotlib
 COMANDOS PARA CRIAÇÃO DA PRÓXIMA VERSÃO DO EXECUTAVEL
 -----------------------------------------------------
 
-No terminal VScode rodar o código:
+No terminal VScode rodar o código: mude os numeros da versão antes ->
 
 
+Remove-Item -Recurse -Force build, "Executavel v2.0.x.spec" -ErrorAction SilentlyContinue
+Remove-Item -Recurse -Force "Executavel\Executavel v2.0.x" -ErrorAction SilentlyContinue
 
-- Mudar o numero da versão --name 
+.venv\Scripts\pyinstaller.exe --noconfirm --onedir --windowed --distpath ".\Executavel" --workpath ".\build" --name "Executavel v2.0.x" --collect-data matplotlib --hidden-import matplotlib.backends.backend_tkagg --add-data "README.txt;." main.py
+
+Copy-Item -Recurse -Force ".\logs" ".\Executavel\Executavel v2.0.x\logs"
+
+
+**Antes de rodar, não esquece de atualizar a versão em dois lugares no código 
+(senão o build funciona, mas o app continua se identificando como 2.0.3 por dentro):
+
+ui.py → __version__ = "2.0.4"
+README.txt → atualizar o changelog com o que mudou nessa versão
+
+
 - Código faz a integração do Exe sem dependencia das pastas de log fora tudo integrado a pasta somente para enviar 
+- Apagar sempre a pasta build para não gerar uma poluição de dados é uma pasta temporária usada durante a montagem do executável
 
 ----------------------Organização do projeto------------------------------ 
 
