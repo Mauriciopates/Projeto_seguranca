@@ -15,7 +15,12 @@ from functools import lru_cache
 # CONFIGURAÇÕES DE CAMINHOS
 # ============================================================
 
-DIRETORIO_BASE = Path(__file__).resolve().parent
+import sys
+
+if getattr(sys, "frozen", False):
+    DIRETORIO_BASE = Path(sys.executable).resolve().parent
+else:
+    DIRETORIO_BASE = Path(__file__).resolve().parent
 
 PASTA_LOGS = DIRETORIO_BASE / "logs"
 PASTA_RELATORIOS = DIRETORIO_BASE / "relatorios_exportacao"

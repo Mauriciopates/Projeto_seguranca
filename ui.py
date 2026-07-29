@@ -9,6 +9,7 @@ import io
 import re
 import threading
 import traceback
+from typing import Optional
 from collections import Counter
 from pathlib import Path  # ← Usado para caminhos
 from datetime import datetime
@@ -73,6 +74,14 @@ from core import (
 from exportacao import exportar_relatorio, ExportadorPDF, ExportadorCSV
 
 # ============================================================
+# VERSAO DA APLICACAO
+# ============================================================
+# Atualize APENAS este valor a cada alteracao no projeto.
+# Ele e usado no titulo da janela e no cabecalho da tela inicial.
+
+__version__ = "2.0.3"
+
+# ============================================================
 # CLASSES DE RELATORIOS (Interface) - IGUAL AO ORIGINAL
 # ============================================================
 
@@ -85,8 +94,8 @@ class RelatorioBase:
         self.text_widget = text_widget
         self.titulo = titulo
         self.tipo = "popup"
-        self.conteudo = None
-        self.popup = None
+        self.conteudo: Optional[str] = None
+        self.popup: Optional[Toplevel] = None
 
     def executar(self):
         raise NotImplementedError("Subclasses devem implementar executar()")
@@ -340,12 +349,12 @@ class RelatorioDetalhes(RelatorioBase):
         self.tipo = "detalhes"
         self.dados_modulos = {}
         self.total_eventos = 0
-        self.modulo_selecionado_atual = None
-        self.tree_eventos = None
-        self.label_modulo_selecionado = None
-        self.label_stats = None
-        self.popup = None
-        self.conteudo = None
+        self.modulo_selecionado_atual: Optional[str] = None
+        self.tree_eventos: Optional[ttk.Treeview] = None
+        self.label_modulo_selecionado: Optional[Label] = None
+        self.label_stats: Optional[Label] = None
+        self.popup: Optional[Toplevel] = None
+        self.conteudo: Optional[str] = None
 
     def executar(self):
         self.parent._log_terminal("=" * 50, "DESTAQUE")
@@ -538,6 +547,9 @@ class RelatorioDetalhes(RelatorioBase):
 
     def _mostrar_aviso(self, mensagem, tag="warning"):
         """Executa sempre na thread principal"""
+        assert self.tree_eventos is not None
+        assert self.label_modulo_selecionado is not None
+        assert self.label_stats is not None
         for item in self.tree_eventos.get_children():
             self.tree_eventos.delete(item)
         cor = (
@@ -668,6 +680,9 @@ class RelatorioDetalhes(RelatorioBase):
         if not info:
             return
 
+        assert self.tree_eventos is not None
+        assert self.label_modulo_selecionado is not None
+        assert self.label_stats is not None
         for item in self.tree_eventos.get_children():
             self.tree_eventos.delete(item)
 
@@ -910,11 +925,11 @@ class RelatorioUtilizadores(RelatorioBase):
         self.utilizadores_extraidos = {}
         self.filtro_status = StringVar(value="todos")
         self.conteudo_atual = ""
-        self.conteudo = None
+        self.conteudo: Optional[str] = None
         self.dados_tabela_atual = []
-        self.tree = None
-        self.resumo_frame = None
-        self.popup = None
+        self.tree: Optional[ttk.Treeview] = None
+        self.resumo_frame: Optional[Frame] = None
+        self.popup: Optional[Toplevel] = None
 
     def executar(self):
         self.parent._log_terminal("=" * 50, "DESTAQUE")
@@ -1025,7 +1040,7 @@ class RelatorioUtilizadores(RelatorioBase):
         )
         for col in colunas:
             self.tree.heading(col, text=titulos[col])
-            self.tree.column(col, width=larguras[col], anchor=ancoras[col], stretch=(col == "modulos"))
+            self.tree.column(col, width=larguras[col], anchor=ancoras[col], stretch=(col == "modulos"))  # type: ignore[arg-type]
 
         self.tree.tag_configure("ativo", foreground=self.parent.cores["texto_sucesso"])
         self.tree.tag_configure(
@@ -1085,8 +1100,10 @@ class RelatorioUtilizadores(RelatorioBase):
 
     def _mostrar_aviso(self, mensagem, tag="warning"):
         """Mostra um aviso na area da tabela quando nao ha dados"""
+        assert self.tree is not None
         for item in self.tree.get_children():
             self.tree.delete(item)
+        assert self.resumo_frame is not None
         for widget in self.resumo_frame.winfo_children():
             widget.destroy()
         cor = (
@@ -1180,6 +1197,7 @@ class RelatorioUtilizadores(RelatorioBase):
         )
 
         # --- Resumo (Labels coloridos, substitui o bloco de texto) ---
+        assert self.resumo_frame is not None
         for widget in self.resumo_frame.winfo_children():
             widget.destroy()
 
@@ -1244,7 +1262,9 @@ class RelatorioUtilizadores(RelatorioBase):
             ).pack(anchor="w", pady=(2, 0))
 
         # --- Tabela (Treeview) ---
+        assert self.tree is not None
         for item in self.tree.get_children():
+            assert self.tree is not None
             self.tree.delete(item)
 
         self.dados_tabela_atual = []
@@ -1336,6 +1356,7 @@ class RelatorioUtilizadores(RelatorioBase):
 
     def _abrir_detalhe_utilizador(self, event):
         """Ao dar duplo clique numa linha, mostra os detalhes completos do utilizador"""
+        assert self.tree is not None
         item_id = self.tree.identify_row(event.y)
         if not item_id:
             return
@@ -1619,7 +1640,7 @@ class InterfaceRelatorios:
         else:
             self.root = root
 
-        self.root.title("Sistema Integrado de Seguranca - Relatorios")
+        self.root.title(f"Sistema Integrado de Seguranca - Relatorios v{__version__}")
         self.root.geometry("1300x800")
         self.root.minsize(1100, 700)
         self.root.configure(bg="#e8edf5")
@@ -1670,7 +1691,7 @@ class InterfaceRelatorios:
         }
         self.eventos_carregados = False
         self.utilizadores_extraidos = {}
-        self.ultimo_relatorio = None
+        self.ultimo_relatorio: Optional[str] = None
         self.ultimo_titulo = ""
 
         self._criar_interface()
@@ -2005,13 +2026,22 @@ class InterfaceRelatorios:
     def _criar_cabecalho(self):
         cabecalho = Frame(self.container, bg=self.cores["bg_principal"])
         cabecalho.pack(fill=X, pady=(0, 15))
+        titulo_frame = Frame(cabecalho, bg=self.cores["bg_principal"])
+        titulo_frame.pack(side=LEFT)
         Label(
-            cabecalho,
+            titulo_frame,
             text="RELATÓRIOS DO SISTEMA",
             font=self.fontes["titulo"],
             fg=self.cores["texto_principal"],
             bg=self.cores["bg_principal"],
         ).pack(side=LEFT)
+        Label(
+            titulo_frame,
+            text=f"v{__version__}",
+            font=self.fontes["status"],
+            fg=self.cores["texto_secundario"],
+            bg=self.cores["bg_principal"],
+        ).pack(side=LEFT, padx=(8, 0), anchor="s", pady=(0, 4))
         status_frame = Frame(cabecalho, bg=self.cores["bg_principal"])
         status_frame.pack(side=RIGHT)
         self.status_label = Label(

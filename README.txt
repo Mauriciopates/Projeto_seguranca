@@ -1,12 +1,21 @@
-RELATORIOS.PY v2.0.2- SISTEMA DE GERACAO DE RELATORIOS
+RELATORIOS.PY v2.0.3- SISTEMA DE GERACAO DE RELATORIOS
 
 
-Atualização da versão v2.0.2:
+Atualização da versão v2.0.3:
+----------------------------
 
-- Criação do README.txt 
+- Mudança para README.txt (Orientado pelo formador)
 - Informação do caminho dos LOGS no README
-- Informação da Versão na tela inicial do Sistema
+- Informação da Versão na tela inicial do Sistema 
+- Correção de algumas tipagens no código ui.py antes de gerar o executavel
+- Criação do executavel na pasta Executavel/Executavel v2.0.3
 
+
+ALTERAÇÃO DE VERSIONAMENTO
+---------------------------
+
+ui.py ->
+__version__ = "V2.0.3"
 
 CAMINHO DOS LOGS:
 
@@ -61,6 +70,17 @@ py -m pip install reportlab matplotlib
 3. Instalar as bibliotecas:
    pip install reportlab matplotlib
 
+   
+
+COMANDOS PARA CRIAÇÃO DA PRÓXIMA VERSÃO DO EXECUTAVEL
+-----------------------------------------------------
+
+No terminal VScode rodar o código:
+
+
+
+- Mudar o numero da versão --name 
+- Código faz a integração do Exe sem dependencia das pastas de log fora tudo integrado a pasta somente para enviar 
 
 ----------------------Organização do projeto------------------------------ 
 
