@@ -2,6 +2,7 @@
 core.py - Coração do sistema
 Gerencia: Estado do sistema, parsing de logs, análise de dados
 """
+
 import re
 import os
 import sys
@@ -35,8 +36,10 @@ ultima_leitura = None
 # CLASSE: Evento
 # ============================================================
 
+
 class Evento:
     """Representa um evento do sistema"""
+
     __slots__ = ["timestamp", "event_type", "payload"]
 
     def __init__(self, event_type: str, payload):
@@ -52,9 +55,10 @@ class Evento:
 # CLASSE: EstadoDoSistema
 # ============================================================
 
+
 class EstadoDoSistema:
     """Gerencia o estado do sistema e eventos"""
-    
+
     def __init__(self):
         self.events = []
         self.errors = 0
@@ -118,6 +122,7 @@ class EstadoDoSistema:
 # FUNÇÕES DE PARSING DE LOGS
 # ============================================================
 
+
 def _determinar_tipo_evento(descricao, severidade):
     desc_lower = descricao.lower()
     tipos = [
@@ -149,7 +154,9 @@ def _parse_linha_log(linha):
         modulo = match.group(4).strip().upper()
         descricao = match.group(5).strip()
 
-        user_match = re.search(r"utilizador\s*['\"]?([a-zA-Z0-9_]+)['\"]?", descricao, re.IGNORECASE)
+        user_match = re.search(
+            r"utilizador\s*['\"]?([a-zA-Z0-9_]+)['\"]?", descricao, re.IGNORECASE
+        )
         utilizador = user_match.group(1) if user_match else None
 
         severidade_map = {"CRITICAL": "CRITICAL", "WARNING": "WARNING"}
@@ -189,7 +196,7 @@ def _parse_linha_log(linha):
         modulo_match = re.search(r"MÓDULO\s+([^:]+):", resto)
         if modulo_match:
             modulo = modulo_match.group(1).strip().upper()
-            descricao = resto[resto.find(":") + 1:].strip()
+            descricao = resto[resto.find(":") + 1 :].strip()
         else:
             modulo = "DESCONHECIDO"
             descricao = resto
@@ -289,6 +296,7 @@ def ler_logs_pasta(estado=None):
 # FUNÇÃO: inicializar()
 # ============================================================
 
+
 def inicializar(estado=None):
     global estado_sistema
 
@@ -317,6 +325,7 @@ def inicializar(estado=None):
 # ============================================================
 # FUNÇÃO: consultar_sistema() - ATUALIZADA COM 10 ÚLTIMOS EVENTOS
 # ============================================================
+
 
 def consultar_sistema():
     """Exibe consulta do sistema no console com os 10 últimos eventos"""
@@ -357,12 +366,14 @@ def consultar_sistema():
         if ultimos:
             # Cabeçalho da tabela
             print("  " + "-" * 80)
-            print(f"  {'Data/Hora':<20} | {'Tipo':<12} | {'Modulo':<15} | {'Severidade':<10} | {'Utilizador':<15} | {'Descricao':<30}")
+            print(
+                f"  {'Data/Hora':<20} | {'Tipo':<12} | {'Modulo':<15} | {'Severidade':<10} | {'Utilizador':<15} | {'Descricao':<30}"
+            )
             print("  " + "-" * 80)
             # Lista os eventos do mais antigo para o mais recente
             for evento in reversed(ultimos):
                 hora = evento.timestamp.strftime("%Y-%m-%d %H:%M:%S")
-                tipo = evento.event_type if hasattr(evento, 'event_type') else "EVENTO"
+                tipo = evento.event_type if hasattr(evento, "event_type") else "EVENTO"
                 modulo = ""
                 descricao = ""
                 severidade = ""
@@ -372,7 +383,9 @@ def consultar_sistema():
                     descricao = evento.payload.get("descricao", "")[:30]
                     severidade = evento.payload.get("severidade", "")
                     utilizador = evento.payload.get("utilizador", "")[:15]
-                print(f"  {hora:<20} | {tipo:<12} | {modulo:<15} | {severidade:<10} | {utilizador:<15} | {descricao}")
+                print(
+                    f"  {hora:<20} | {tipo:<12} | {modulo:<15} | {severidade:<10} | {utilizador:<15} | {descricao}"
+                )
             print("  " + "-" * 80)
             print(f"  Total de eventos exibidos: {len(ultimos)}")
         else:
@@ -397,6 +410,7 @@ def consultar_sistema():
 # ============================================================
 # FUNÇÃO: detalhar_eventos_por_modulo()
 # ============================================================
+
 
 def detalhar_eventos_por_modulo():
     """Exibe detalhamento de eventos por módulo no console (APENAS RESUMO)"""
@@ -429,10 +443,14 @@ def detalhar_eventos_por_modulo():
 
         for modulo in sorted(modulos):
             eventos = estado_sistema.eventos_por_modulo[modulo]
-            percentual = (len(eventos) / total_eventos * 100) if total_eventos > 0 else 0
+            percentual = (
+                (len(eventos) / total_eventos * 100) if total_eventos > 0 else 0
+            )
             ultimo = eventos[-1] if eventos else None
             ultimo_hora = ultimo.timestamp.strftime("%H:%M:%S") if ultimo else "N/A"
-            print(f"{modulo:<25} | {len(eventos):>8} | {percentual:>5.1f}% | {ultimo_hora:<20}")
+            print(
+                f"{modulo:<25} | {len(eventos):>8} | {percentual:>5.1f}% | {ultimo_hora:<20}"
+            )
 
         print("-" * 70)
 
@@ -473,17 +491,23 @@ def detalhar_eventos_por_modulo():
                 colunas = 4
                 largura_coluna = 22
                 for i in range(0, len(utilizadores_ordenados), colunas):
-                    linha_colunas = utilizadores_ordenados[i:i+colunas]
-                    linha_formatada = "     " + "".join([f"{u:<{largura_coluna}}" for u in linha_colunas])
+                    linha_colunas = utilizadores_ordenados[i : i + colunas]
+                    linha_formatada = "     " + "".join(
+                        [f"{u:<{largura_coluna}}" for u in linha_colunas]
+                    )
                     print(linha_formatada)
                 if len(utilizadores_ordenados) > 20:
-                    print(f"     ... total de {len(utilizadores_ordenados)} utilizadores")
+                    print(
+                        f"     ... total de {len(utilizadores_ordenados)} utilizadores"
+                    )
             else:
                 print("  Nenhum utilizador envolvido")
 
             if tipos_eventos:
                 print(f"\n  Tipos de evento:")
-                for tipo, qtd in sorted(tipos_eventos.items(), key=lambda x: x[1], reverse=True):
+                for tipo, qtd in sorted(
+                    tipos_eventos.items(), key=lambda x: x[1], reverse=True
+                ):
                     print(f"     - {tipo}: {qtd}")
 
         print("\n" + "=" * 70)
@@ -495,6 +519,7 @@ def detalhar_eventos_por_modulo():
 # ============================================================
 # FUNÇÃO: gerar_relatorio_analitico()
 # ============================================================
+
 
 def gerar_relatorio_analitico():
     """Gera relatório analítico como string (TODOS OS DADOS)"""
@@ -542,7 +567,9 @@ def gerar_relatorio_analitico():
         linhas.append("-" * 40)
         eventos_por_tipo = estado_sistema.contar_eventos_por_tipo()
         if eventos_por_tipo:
-            for tipo, contagem in sorted(eventos_por_tipo.items(), key=lambda x: x[1], reverse=True):
+            for tipo, contagem in sorted(
+                eventos_por_tipo.items(), key=lambda x: x[1], reverse=True
+            ):
                 linhas.append(f"   {tipo}: {contagem}")
         else:
             linhas.append("   Nenhum evento registado")
@@ -558,7 +585,9 @@ def gerar_relatorio_analitico():
                 if isinstance(evento.payload, dict):
                     modulo = evento.payload.get("modulo", "")
                     descricao = evento.payload.get("descricao", "")
-                linhas.append(f"   [{evento.event_type}] {hora} | {modulo} | {descricao}")
+                linhas.append(
+                    f"   [{evento.event_type}] {hora} | {modulo} | {descricao}"
+                )
         else:
             linhas.append("   Nenhum evento recente")
 
@@ -573,6 +602,7 @@ def gerar_relatorio_analitico():
 # ============================================================
 # FUNÇÃO: debug_logs()
 # ============================================================
+
 
 def debug_logs():
     """Exibe debug dos logs no console"""
@@ -592,7 +622,9 @@ def debug_logs():
         if hasattr(evento, "payload"):
             payload = evento.payload
             desc = payload.get("descricao", "") if isinstance(payload, dict) else ""
-            user = payload.get("utilizador", "N/A") if isinstance(payload, dict) else "N/A"
+            user = (
+                payload.get("utilizador", "N/A") if isinstance(payload, dict) else "N/A"
+            )
             tipo = evento.event_type
             modulo = payload.get("modulo", "") if isinstance(payload, dict) else ""
         else:
@@ -622,6 +654,7 @@ def debug_logs():
 # ============================================================
 # FUNÇÕES DE EXTRAÇÃO DE DADOS
 # ============================================================
+
 
 def extrair_utilizadores_dos_eventos(eventos):
     """Extrai utilizadores dos eventos com identificação de status"""
@@ -654,7 +687,9 @@ def extrair_utilizadores_dos_eventos(eventos):
         modulo = payload.get("modulo", "")
         evento_tipo = payload.get("tipo", "")
 
-        utilizador = payload.get("utilizador") or payload.get("username") or payload.get("user")
+        utilizador = (
+            payload.get("utilizador") or payload.get("username") or payload.get("user")
+        )
 
         if not utilizador:
             user_match = regex_utilizador.search(descricao)
@@ -702,7 +737,9 @@ def extrair_utilizadores_dos_eventos(eventos):
                     quem_match = regex_quem.search(descricao)
                     detalhes_desativacao[utilizador] = {
                         "data_desativacao": evento.timestamp,
-                        "desativado_por": quem_match.group(1) if quem_match else "Sistema",
+                        "desativado_por": (
+                            quem_match.group(1) if quem_match else "Sistema"
+                        ),
                         "descricao": descricao[:100],
                         "modulo": modulo,
                     }
@@ -716,7 +753,9 @@ def extrair_utilizadores_dos_eventos(eventos):
                     quem_match = regex_quem.search(descricao)
                     detalhes_exclusao[utilizador] = {
                         "data_exclusao": evento.timestamp,
-                        "excluido_por": quem_match.group(1) if quem_match else "Sistema",
+                        "excluido_por": (
+                            quem_match.group(1) if quem_match else "Sistema"
+                        ),
                         "descricao": descricao[:100],
                         "modulo": modulo,
                     }
@@ -742,6 +781,7 @@ def extrair_utilizadores_dos_eventos(eventos):
 # FUNÇÃO: extrair_estatisticas()
 # ============================================================
 
+
 def extrair_estatisticas(eventos):
     """Extrai estatísticas básicas dos eventos"""
     modulos = {}
@@ -750,8 +790,12 @@ def extrair_estatisticas(eventos):
     info = 0
     utilizadores = set()
 
-    regex_modulo = re.compile(r"(AUTENTICACAO|BASE_DADOS|CAMARAS|SENSORES)", re.IGNORECASE)
-    regex_critical = re.compile(r"\b(CRITICAL|CRITICO|CRIT|ERROR|ERRO)\b", re.IGNORECASE)
+    regex_modulo = re.compile(
+        r"(AUTENTICACAO|BASE_DADOS|CAMARAS|SENSORES)", re.IGNORECASE
+    )
+    regex_critical = re.compile(
+        r"\b(CRITICAL|CRITICO|CRIT|ERROR|ERRO)\b", re.IGNORECASE
+    )
     regex_warning = re.compile(r"\b(WARNING|AVISO|WARN)\b", re.IGNORECASE)
 
     for evento in eventos:
@@ -762,7 +806,7 @@ def extrair_estatisticas(eventos):
             modulo = mod_match.group(1).upper()
             modulos[modulo] = modulos.get(modulo, 0) + 1
 
-        if hasattr(evento, 'payload') and isinstance(evento.payload, dict):
+        if hasattr(evento, "payload") and isinstance(evento.payload, dict):
             user = evento.payload.get("utilizador")
             if user:
                 utilizadores.add(user)
