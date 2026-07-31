@@ -1,34 +1,99 @@
-RELATORIOS.PY v2.0.3- SISTEMA DE GERACAO DE RELATORIOS
+RELATORIOS.PY v2.1.0 - SISTEMA DE GERACAO DE RELATORIOS
+ 
+ 
+ATUALIZACAO DA VERSAO v2.1.0
+-----------------------------
+ 
+[Interface (ui.py)]
+- Detalhamento por Modulo reformulado: pop-up de selecao do modulo +
+  tabela dos eventos so daquele modulo
+- Tela inicial reorganizada: botoes separados em "RELATORIOS" e
+  "FERRAMENTAS E ACOES", com icones
 
+ 
+[Novo arquivo: auditoria.py]
+- Log de auditoria proprio da aplicação, separado dos logs que o sistema
+  analisa - regista quem exportou o que e quando releu os logs
+  (auditoria/auditoria.log)
+- Independente do core.py, a pasta so e criada quando alguma acao
+  realmente acontece
+ 
+[core.py - regras de leitura de logs]
+- Severidade somente aceitar [CRITICO] , [AVISO] e [INFO]
+- Palavra "MODULO" agora e exigida SEM acento
+- Caminho base dos logs alterado para pasta fixa C:\260462 (deixou de
+  ser relativo a posicao do main.py/executavel)
+ 
+[Executavel]
+- Comando de build atualizado com --collect-data matplotlib e
+  --hidden-import matplotlib.backends.backend_tkagg (necessario para os
+  graficos do Analitico funcionarem dentro do executavel)
+ 
+ 
+>>> AVISO DE COMPATIBILIDADE <<<
+Logs ja existentes que usam CRITICAL/WARNING (ingles) ou MODULO com
+acento deixam de ser lidos corretamente a partir desta versao (o evento
+continua a aparecer, mas como severidade INFO e/ou modulo
+DESCONHECIDO). E necessario avisar TODAS as equipas de modulo sobre o
+novo formato antes de atualizar para esta versao em producao.
 
-Atualização da versão v2.0.3:
-----------------------------
+Regras de versão
 
-- Mudança para README.txt (Orientado pelo formador)
-- Informação do caminho dos LOGS no README
-- Informação da Versão na tela inicial do Sistema 
-- Correção de algumas tipagens no código ui.py antes de gerar o executavel
-- Criação do executavel na pasta Executavel/Executavel v2.0.3
+tipos de alteração...
+├── Quebrou o sistema antigo ou mudou totalmente a arquitetura? ──> Sobe MAJOR (v3.0.0)
+├── Adicionou um recurso/funcionalidade nova que funciona? ──────> Sobe MINOR (v2.1.0)
+└── Corrigiu um erro/bug ou fez um pequeno ajuste visual? ───────> Sobe PATCH (v2.0.3)
 
 
 ALTERAÇÃO DE VERSIONAMENTO
 ---------------------------
 
 ui.py ->
-__version__ = "V2.0.3"
+__version__ = "v2.1.0"
 
-CAMINHO DOS LOGS:
+
+CAMINHO LEITURA DOS LOGS:
+-----------------
 
 core.py ->
-
-DIRETORIO_BASE = Path(__file__).resolve().parent
-
-PASTA_LOGS = DIRETORIO_BASE / "logs"
+ 
+DIRETORIO_BASE = Path(r"C:\260462")
+ 
+PASTA_LOGS = DIRETORIO_BASE / "Logs"
 PASTA_RELATORIOS = DIRETORIO_BASE / "relatorios_exportacao"
-
+ 
 PASTA_LOGS.mkdir(parents=True, exist_ok=True)
 PASTA_RELATORIOS.mkdir(parents=True, exist_ok=True)
+ 
+auditoria.py ->
+ 
+PASTA_AUDITORIA = DIRETORIO_BASE / "Auditoria"   (mesma base C:\260462)
 
+«« Para ler os logs é necessário fazer a cópia da pasta log aqui dentro para o caminho acima.
+
+
+FORMATO OBRIGATORIO DE LOG (para as equipas de modulo)
+----------------------------------------------------------
+ 
+Uma linha por evento, exatamente assim:
+ 
+AAAA-MM-DD HH:MM:SS [SEVERIDADE] MODULO NOME_DO_MODULO: descricao do evento
+ 
+- Data/hora: AAAA-MM-DD HH:MM:SS (sem milissegundos, sem virgula)
+- Severidade: CRITICO, AVISO ou INFO (qualquer outra palavra vira INFO
+  automaticamente, incluindo termos em ingles)
+- "MODULO": palavra literal, MAIUSCULA, SEM acento
+- Nome do modulo: uma palavra, maiuscula (ex: CAMARAS, ALARMES,
+  AUTENTICACAO, SENSORES, ACESSOS, RECONHECIMENTO, BACKUPS, RELATORIOS,
+  UTILIZADORES)
+- Para associar a acao a um utilizador, escrever exatamente:
+  utilizador 'nome_aqui'
+- Arquivo com extensao .log ou .txt, codificacao UTF-8, dentro da pasta
+  Logs
+ 
+Exemplo certo:
+2026-07-31 09:45:12 [CRITICO] MODULO ALARMES: Alarme AL-003 alterado de
+DESACTIVADO para ACTIVO. Motivo: Intrusao detetada
 
 
 1. DEPENDÊNCIAS NECESSÁRIAS
@@ -70,31 +135,55 @@ py -m pip install reportlab matplotlib
 3. Instalar as bibliotecas:
    pip install reportlab matplotlib
 
-   
+
+
 
 COMANDOS PARA CRIAÇÃO DA PRÓXIMA VERSÃO DO EXECUTAVEL
 -----------------------------------------------------
 
-No terminal VScode rodar o código: mude os numeros da versão antes ->
+ 
+Antes de rodar, atualizar a versao em dois lugares (senao o build
+funciona, mas o app continua se identificando com o numero antigo por
+dentro):
+- ui.py -> __version__ = "X.X.X"
+- README.txt -> atualizar o changelog com o que mudou nessa versao
+ 
+No terminal do VSCode, com a .venv (Python 3.11) ativada, trocar
+"X.X.X" pelo numero real da versao em TODOS os lugares abaixo:
+
+>>
+
+ 
+Remove-Item -Recurse -Force build, "Executavel vX.X.X.spec" -ErrorAction SilentlyContinue
+Remove-Item -Recurse -Force "Executavel\Executavel vX.X.X" -ErrorAction SilentlyContinue
+ 
+.venv\Scripts\pyinstaller.exe --noconfirm --onedir --windowed --distpath ".\Executavel" --workpath ".\build" --name "Executavel vX.X.X" --collect-data matplotlib --hidden-import matplotlib.backends.backend_tkagg --add-data "README.txt;." main.py
 
 
-Remove-Item -Recurse -Force build, "Executavel v2.0.x.spec" -ErrorAction SilentlyContinue
-Remove-Item -Recurse -Force "Executavel\Executavel v2.0.x" -ErrorAction SilentlyContinue
 
-.venv\Scripts\pyinstaller.exe --noconfirm --onedir --windowed --distpath ".\Executavel" --workpath ".\build" --name "Executavel v2.0.x" --collect-data matplotlib --hidden-import matplotlib.backends.backend_tkagg --add-data "README.txt;." main.py
+<<
+ 
+>>> MUDOU NA VERSAO 2.1.0 <<<
+Nao copiar mais a pasta "logs" pra dentro do executavel (o antigo passo
+"Copy-Item ... logs" das versoes anteriores nao se aplica mais). Como o
+caminho agora e fixo (C:\260462 - ver secao "CAMINHO BASE E LEITURA DOS
+LOGS" acima), o app sempre le e escreve em C:\260462\Logs,
+C:\260462\Auditoria e C:\260462\relatorios_exportacao, nao importa onde
+o .exe esteja instalado.
+ 
+Isso muda a forma de distribuir o executavel: como as pastas de dados
+nao viajam mais dentro do .zip do executavel, o computador que for
+rodar o app precisa ter a pasta C:\260462\Logs com os arquivos de log
+la dentro (o app cria as pastas sozinho na primeira execucao, mas
+comecam vazias - sem log nenhum pra analisar).
+ 
+Depois de gerar, apagar a pasta "build" - e so material temporario
+usado durante a montagem do executavel, nao faz parte do app, e pode
+virar poluicao de dados se acumular entre varias versoes (ela e
+recriada do zero automaticamente no proximo build).
 
-Copy-Item -Recurse -Force ".\logs" ".\Executavel\Executavel v2.0.x\logs"
 
 
-**Antes de rodar, não esquece de atualizar a versão em dois lugares no código 
-(senão o build funciona, mas o app continua se identificando como 2.0.3 por dentro):
-
-ui.py → __version__ = "2.0.4"
-README.txt → atualizar o changelog com o que mudou nessa versão
-
-
-- Código faz a integração do Exe sem dependencia das pastas de log fora tudo integrado a pasta somente para enviar 
-- Apagar sempre a pasta build para não gerar uma poluição de dados é uma pasta temporária usada durante a montagem do executável
 
 ----------------------Organização do projeto------------------------------ 
 
@@ -103,6 +192,7 @@ Projeto_seguranca/
 ├── core.py          ← Este arquivo completo (coração do sistema)
 ├── exportacao.py    ← Exportação PDF/CSV
 ├── ui.py            ← Interface gráfica 
+├──auditoria.py      ← gera logs
 ├── main.py          ← Ponto de entrada
 │
 ├── logs/            ← Pasta com os arquivos .log
@@ -136,13 +226,14 @@ Oferece a função exportar_relatorio() (fácil de usar)
 
 
 
-- Mauricio:  ui.py  (FRONT) (Importa e usa)
+- Mauricio:  ui.py e auditoria.py  (FRONT) (Importa e usa)
 
-O que a colega faz na ui.py:
-Cria a janela com botões
+ui.py: Cria a janela com botões
 
 Mostra os relatórios na tela
 
 Chama as funções do seu core.py
 
 Usa seu exportacao.py para salvar arquivos
+
+auditoria.py :  Criação dos logs de rastreamento 

@@ -74,12 +74,18 @@ from core import (
 from exportacao import exportar_relatorio, ExportadorPDF, ExportadorCSV
 
 # ============================================================
+# LOG DE AUDITORIA DA APLICACAO (independente do core.py)
+# ============================================================
+
+import auditoria
+
+# ============================================================
 # VERSAO DA APLICACAO
 # ============================================================
 # Atualize APENAS este valor a cada alteracao no projeto.
 # Ele e usado no titulo da janela e no cabecalho da tela inicial.
 
-__version__ = "2.0.3"
+__version__ = "2.1.0"
 
 # ============================================================
 # CLASSES DE RELATORIOS (Interface) - IGUAL AO ORIGINAL
@@ -408,14 +414,19 @@ class RelatorioDetalhes(RelatorioBase):
         # --- Tabela de eventos do modulo selecionado ---
         estilo = ttk.Style()
         estilo.configure("Detalhes.Treeview", font=("Consolas", 10), rowheight=24)
-        estilo.configure(
-            "Detalhes.Treeview.Heading", font=self.parent.fontes["botao"]
-        )
+        estilo.configure("Detalhes.Treeview.Heading", font=self.parent.fontes["botao"])
 
         eventos_frame = Frame(self.popup, bg="#ffffff")
         eventos_frame.pack(fill=BOTH, expand=True, padx=15, pady=(0, 10))
 
-        colunas_eventos = ("num", "hora", "tipo", "descricao", "utilizador", "severidade")
+        colunas_eventos = (
+            "num",
+            "hora",
+            "tipo",
+            "descricao",
+            "utilizador",
+            "severidade",
+        )
         titulos_eventos = {
             "num": "#",
             "hora": "Data/Hora",
@@ -621,9 +632,7 @@ class RelatorioDetalhes(RelatorioBase):
         canvas = Canvas(
             lista_frame, bg=self.parent.cores["bg_principal"], highlightthickness=0
         )
-        scrollbar = ttk.Scrollbar(
-            lista_frame, orient="vertical", command=canvas.yview
-        )
+        scrollbar = ttk.Scrollbar(lista_frame, orient="vertical", command=canvas.yview)
         botoes_frame = Frame(canvas, bg=self.parent.cores["bg_principal"])
 
         botoes_frame.bind(
@@ -758,9 +767,7 @@ class RelatorioDetalhes(RelatorioBase):
             if not self.modulo_selecionado_atual or not self.dados_modulos.get(
                 self.modulo_selecionado_atual
             ):
-                messagebox.showerror(
-                    "Erro", "Nenhum modulo selecionado para exportar!"
-                )
+                messagebox.showerror("Erro", "Nenhum modulo selecionado para exportar!")
                 return None
 
             modulo_selecionado = self.modulo_selecionado_atual
@@ -813,6 +820,10 @@ class RelatorioDetalhes(RelatorioBase):
                 f"CSV do modulo {modulo_selecionado} gerado com sucesso: {caminho.name}",
                 "SUCESSO",
             )
+            self.parent._registrar_auditoria(
+                "EXPORTOU CSV (Detalhamento)",
+                f"Modulo {modulo_selecionado} -> {caminho.name}",
+            )
             try:
                 os.startfile(str(caminho))
             except:
@@ -845,6 +856,7 @@ class RelatorioDetalhes(RelatorioBase):
         except Exception as e:
             messagebox.showerror("Erro", f"Erro ao exportar PDF: {e}")
             traceback.print_exc()
+
 
 # ============================================================
 # CLASSE: RelatorioAnalitico - IGUAL AO ORIGINAL
@@ -1046,9 +1058,13 @@ class RelatorioUtilizadores(RelatorioBase):
         self.tree.tag_configure(
             "desativado", foreground=self.parent.cores["texto_aviso"]
         )
-        self.tree.tag_configure("excluido", foreground=self.parent.cores["texto_perigo"])
+        self.tree.tag_configure(
+            "excluido", foreground=self.parent.cores["texto_perigo"]
+        )
 
-        scroll_v = ttk.Scrollbar(tabela_frame, orient="vertical", command=self.tree.yview)
+        scroll_v = ttk.Scrollbar(
+            tabela_frame, orient="vertical", command=self.tree.yview
+        )
         self.tree.configure(yscrollcommand=scroll_v.set)
         self.tree.pack(side=LEFT, fill=BOTH, expand=True)
         scroll_v.pack(side=RIGHT, fill=Y)
@@ -1313,7 +1329,9 @@ class RelatorioUtilizadores(RelatorioBase):
                     f"{i:<4} | {utilizador[:20]:<20} | {status_texto_col:<14} | {dados['total_eventos']:>8} | {ultimo:<20} | {modulos_str}"
                 )
         else:
-            linhas_texto.append("Nenhum utilizador encontrado com o filtro selecionado.")
+            linhas_texto.append(
+                "Nenhum utilizador encontrado com o filtro selecionado."
+            )
 
         # --- Texto equivalente, usado apenas para exportar em PDF ---
         texto = []
@@ -1331,12 +1349,16 @@ class RelatorioUtilizadores(RelatorioBase):
             texto.append(f"   Excluidos: {total_excluidos}")
         texto.append(f"\n   Eventos no periodo: {eventos_filtrados}")
         if status_filtro != "todos":
-            texto.append(f"\n   Filtro aplicado: Mostrando apenas {status_label.upper()}")
+            texto.append(
+                f"\n   Filtro aplicado: Mostrando apenas {status_label.upper()}"
+            )
         texto.append("")
         texto.extend(linhas_texto)
         texto.append("\n" + "=" * 80)
         texto.append("\nLEGENDA:")
-        texto.append("   [ATIVO] - Utilizador que aparece nos logs (tem eventos registados)")
+        texto.append(
+            "   [ATIVO] - Utilizador que aparece nos logs (tem eventos registados)"
+        )
         texto.append("   [DESATIVADO] - Identificado por evento de desativacao no log")
         texto.append("   [EXCLUIDO] - Identificado por evento de exclusao no log")
         texto.append("\n" + "=" * 80)
@@ -1522,6 +1544,9 @@ class RelatorioUtilizadores(RelatorioBase):
             self.parent._log_terminal(
                 f"CSV de utilizadores gerado com sucesso: {caminho.name}", "SUCESSO"
             )
+            self.parent._registrar_auditoria(
+                "EXPORTOU CSV (Utilizadores)", f"{caminho.name}"
+            )
 
             try:
                 os.startfile(str(caminho))
@@ -1618,6 +1643,9 @@ class RelatorioRelerLogs:
                 f"Logs recarregados com sucesso! {len(self.parent.eventos)} eventos",
                 "SUCESSO",
             )
+            self.parent._registrar_auditoria(
+                "RELEU LOGS", f"{len(self.parent.eventos)} eventos carregados"
+            )
             messagebox.showinfo(
                 "Sucesso", f"{len(self.parent.eventos)} logs recarregados com sucesso!"
             )
@@ -1713,6 +1741,22 @@ class InterfaceRelatorios:
         reset = "\033[0m"
         cor = cores.get(nivel, "")
         print(f"[{timestamp}] {cor}{nivel}{reset} - {mensagem}")
+
+    def _registrar_auditoria(self, acao, detalhes=""):
+        """Registra uma acao do sistema no log de auditoria (auditoria/auditoria.log),
+        delegando pro modulo auditoria.py (independente do core.py).
+
+        Isto e separado dos logs que o sistema analisa - e um registo de
+        quem usou o proprio sistema, e quando (exportacoes, releitura de
+        logs, etc). Uma falha ao gravar aqui nunca deve impedir a acao
+        original (por isso o try/except silencioso, so avisando no terminal).
+        """
+        try:
+            auditoria.registar(acao, detalhes)
+        except Exception as e:
+            self._log_terminal(
+                f"Nao foi possivel gravar log de auditoria: {e}", "AVISO"
+            )
 
     def _get_payload(self, evento):
         if hasattr(evento, "payload"):
@@ -1862,6 +1906,7 @@ class InterfaceRelatorios:
 
             if caminho:
                 self._log_terminal(f"CSV gerado com sucesso: {caminho.name}", "SUCESSO")
+                self._registrar_auditoria("EXPORTOU CSV", f"{titulo} -> {caminho.name}")
                 try:
                     os.startfile(str(caminho))
                 except:
@@ -1899,6 +1944,7 @@ class InterfaceRelatorios:
 
             if caminho:
                 self._log_terminal(f"PDF gerado com sucesso: {caminho.name}", "SUCESSO")
+                self._registrar_auditoria("EXPORTOU PDF", f"{titulo} -> {caminho.name}")
                 try:
                     os.startfile(str(caminho))
                 except:
@@ -1931,6 +1977,9 @@ class InterfaceRelatorios:
 
             if caminho:
                 self._log_terminal(f"PDF da consulta gerado: {caminho.name}", "SUCESSO")
+                self._registrar_auditoria(
+                    "EXPORTOU PDF (Consulta)", f"{titulo} -> {caminho.name}"
+                )
                 try:
                     os.startfile(str(caminho))
                 except:
@@ -1965,6 +2014,9 @@ class InterfaceRelatorios:
                 self._log_terminal(
                     f"PDF do detalhamento gerado: {caminho.name}", "SUCESSO"
                 )
+                self._registrar_auditoria(
+                    "EXPORTOU PDF (Detalhamento)", f"{titulo} -> {caminho.name}"
+                )
                 try:
                     os.startfile(str(caminho))
                 except:
@@ -1997,6 +2049,9 @@ class InterfaceRelatorios:
 
             if caminho:
                 self._log_terminal(f"PDF Analitico gerado: {caminho.name}", "SUCESSO")
+                self._registrar_auditoria(
+                    "EXPORTOU PDF (Analitico)", f"{titulo} -> {caminho.name}"
+                )
                 try:
                     os.startfile(str(caminho))
                 except:
@@ -2225,9 +2280,7 @@ class InterfaceRelatorios:
                 pady=10,
                 command=comando,
             )
-            btn.grid(
-                row=i // colunas, column=i % colunas, padx=6, pady=6, sticky="ew"
-            )
+            btn.grid(row=i // colunas, column=i % colunas, padx=6, pady=6, sticky="ew")
 
             def on_enter(e, b=btn, cor=bg_hover):
                 b.config(bg=cor)
@@ -2348,6 +2401,9 @@ class InterfaceRelatorios:
             self._log_terminal("=" * 50, "DESTAQUE")
             self._log_terminal("CARREGAMENTO CONCLUIDO", "SUCESSO")
             self._log_terminal("=" * 50, "DESTAQUE")
+            self._registrar_auditoria(
+                "INICIOU O SISTEMA", f"{len(self.eventos)} eventos carregados"
+            )
         except Exception as e:
             self._log_terminal(f"ERRO ao carregar logs: {e}", "ERRO")
             self._atualizar_status("Erro ao carregar", "erro")
@@ -2523,7 +2579,12 @@ class InterfaceRelatorios:
             else:
                 ax2.axis("off")
                 ax2.text(
-                    0.5, 0.5, "Sem dados de modulo", ha="center", va="center", fontsize=8
+                    0.5,
+                    0.5,
+                    "Sem dados de modulo",
+                    ha="center",
+                    va="center",
+                    fontsize=8,
                 )
 
             fig.tight_layout()

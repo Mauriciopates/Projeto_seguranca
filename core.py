@@ -16,15 +16,16 @@ from functools import lru_cache
 # ============================================================
 
 import sys
+from pathlib import Path
 
-if getattr(sys, "frozen", False):
-    DIRETORIO_BASE = Path(sys.executable).resolve().parent
-else:
-    DIRETORIO_BASE = Path(__file__).resolve().parent
+# Define a pasta base diretamente no C:\
+DIRETORIO_BASE = Path(r"C:\260462")
 
-PASTA_LOGS = DIRETORIO_BASE / "logs"
+# Define os caminhos das pastas filhas
+PASTA_LOGS = DIRETORIO_BASE / "Logs"
 PASTA_RELATORIOS = DIRETORIO_BASE / "relatorios_exportacao"
 
+# Cria as pastas (e a pasta pai C:\260462) caso não existam
 PASTA_LOGS.mkdir(parents=True, exist_ok=True)
 PASTA_RELATORIOS.mkdir(parents=True, exist_ok=True)
 
@@ -149,7 +150,10 @@ def _determinar_tipo_evento(descricao, severidade):
 
 def _parse_linha_log(linha):
     """Parseia uma linha de log"""
-    padrao = r"(\d{4}-\d{2}-\d{2})\s+(\d{2}:\d{2}:\d{2})\s+\[(\w+)\]\s+MÓDULO\s+([^:]+):\s+(.+)"
+    # So aceita "MODULO" sem acento (padrao ficou fixado nisso, sem sinonimo)
+    # -- alteracao feita por pedido do Mauricio, a Elisama nao estava
+    # disponivel no momento; ela deve revisar quando puder.
+    padrao = r"(\d{4}-\d{2}-\d{2})\s+(\d{2}:\d{2}:\d{2})\s+\[(\w+)\]\s+MODULO\s+([^:]+):\s+(.+)"
     match = re.match(padrao, linha.strip())
 
     if match:
@@ -164,7 +168,13 @@ def _parse_linha_log(linha):
         )
         utilizador = user_match.group(1) if user_match else None
 
-        severidade_map = {"CRITICAL": "CRITICAL", "WARNING": "WARNING"}
+        # So aceita em portugues (CRITICO/AVISO) - sem sinonimo em ingles
+        # -- alteracao feita por pedido do Mauricio, a Elisama nao estava disponivel
+        # no momento; ela deve revisar quando puder.
+        severidade_map = {
+            "CRITICO": "CRITICAL",
+            "AVISO": "WARNING",
+        }
         severidade_normalizada = severidade_map.get(severidade.upper(), "INFO")
         tipo_evento = _determinar_tipo_evento(descricao, severidade)
 
@@ -198,7 +208,8 @@ def _parse_linha_log(linha):
         severidade = match2.group(3)
         resto = match2.group(4)
 
-        modulo_match = re.search(r"MÓDULO\s+([^:]+):", resto)
+        # So aceita "MODULO" sem acento (mesma regra do parser principal, ver acima)
+        modulo_match = re.search(r"MODULO\s+([^:]+):", resto)
         if modulo_match:
             modulo = modulo_match.group(1).strip().upper()
             descricao = resto[resto.find(":") + 1 :].strip()
@@ -211,9 +222,10 @@ def _parse_linha_log(linha):
         except:
             data_hora = datetime.now()
 
-        if severidade.upper() == "CRITICAL":
+        # So aceita em portugues (mesma regra do parser principal, ver acima)
+        if severidade.upper() == "CRITICO":
             severidade_normalizada = "CRITICAL"
-        elif severidade.upper() == "WARNING":
+        elif severidade.upper() == "AVISO":
             severidade_normalizada = "WARNING"
         else:
             severidade_normalizada = "INFO"
