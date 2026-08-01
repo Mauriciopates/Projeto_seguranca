@@ -179,28 +179,6 @@ Remove-Item -Recurse -Force "Executavel\Relatorios_interface v2.X.X" -ErrorActio
 
 
 
-<<
- 
->>> MUDOU NA VERSAO 2.1.0 <<<
-Nao copiar mais a pasta "logs" pra dentro do executavel (o antigo passo
-"Copy-Item ... logs" das versoes anteriores nao se aplica mais). Como o
-caminho agora e fixo (C:\260462 - ver secao "CAMINHO BASE E LEITURA DOS
-LOGS" acima), o app sempre le e escreve em C:\260462\Logs (inclusive o
-auditoria.py, que grava o relatorios.log na mesma pasta) e
-C:\260462\relatorios_exportacao, nao importa onde o .exe esteja
-instalado.
- 
-Isso muda a forma de distribuir o executavel: como as pastas de dados
-nao viajam mais dentro do .zip do executavel, o computador que for
-rodar o app precisa ter a pasta C:\260462\Logs com os arquivos de log
-la dentro (o app cria as pastas sozinho na primeira execucao, mas
-comecam vazias - sem log nenhum pra analisar).
- 
-Depois de gerar, apagar a pasta "build" - e so material temporario
-usado durante a montagem do executavel, nao faz parte do app, e pode
-virar poluicao de dados se acumular entre varias versoes (ela e
-recriada do zero automaticamente no proximo build).
-
 
 
 
@@ -211,7 +189,7 @@ Projeto_seguranca/
 ├── core.py          ← Este arquivo completo (coração do sistema)
 ├── exportacao.py    ← Exportação PDF/CSV
 ├── ui.py            ← Interface gráfica 
-├──auditoria.py      ← gera logs
+├── auditoria.py      ← gera logs
 ├── main.py          ← Ponto de entrada
 │
 ├── logs/            ← Pasta com os arquivos .log
