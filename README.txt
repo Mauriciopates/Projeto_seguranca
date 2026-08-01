@@ -4,11 +4,19 @@ RELATORIOS.PY v2.1.1 - SISTEMA DE GERACAO DE RELATORIOS
  Nova atualização v2.1.1
  -----------------------
 
- - Mudamos pasta caminho do Log 
+ - Mudamos pasta caminho do Log
+   auditoria.py passou a gravar dentro da MESMA pasta "Logs" que os
+   demais modulos usam (C:\260462\Logs), no arquivo "relatorios.log" -
+   nao existe mais a pasta separada "Auditoria"
  - Mudamos jeito que esta gerando os logs com as regras repassadas para os demais com severidade
  » AAAA-MM-DD HH:MM:SS [SEVERIDADE] MODULO NOME_DO_MODULO: descricao do evento 
 
  »» atualização maior anterior para rastreamento. »»
+- Instalação automática da pasta Logs no executável
+  main.py copia a pasta "Logs" empacotada para C:\260462\Logs na
+  primeira execução, se o destino ainda estiver sem logs de módulo.
+  O relatorios.log (auditoria) não conta nessa verificação.
+- Comando do executável voltou a ter --add-data "logs;Logs"
  
 ATUALIZACAO DA VERSAO v2.1.0
 -----------------------------
@@ -23,7 +31,6 @@ ATUALIZACAO DA VERSAO v2.1.0
 [Novo arquivo: auditoria.py]
 - Log de auditoria proprio da aplicação, separado dos logs que o sistema
   analisa - regista quem exportou o que e quando releu os logs
-  (auditoria/auditoria.log)
 - Independente do core.py, a pasta so e criada quando alguma acao
   realmente acontece
  
@@ -58,7 +65,7 @@ ALTERAÇÃO DE VERSIONAMENTO
 ---------------------------
 
 ui.py ->
-__version__ = "v2.1.1"
+__version__ = "2.1.1"
 
 
 CAMINHO LEITURA DOS LOGS:
@@ -76,7 +83,8 @@ PASTA_RELATORIOS.mkdir(parents=True, exist_ok=True)
  
 auditoria.py ->
  
-PASTA_AUDITORIA = DIRETORIO_BASE / "Auditoria"   (mesma base C:\260462)
+PASTA_AUDITORIA = DIRETORIO_BASE / "Logs"   (MESMA pasta "Logs" acima, nao uma pasta separada)
+FICHEIRO_AUDITORIA = PASTA_AUDITORIA / "relatorios.log"
 
 «« Para ler os logs é necessário fazer a cópia da pasta log aqui dentro para o caminho acima.
 
@@ -154,6 +162,7 @@ COMANDOS PARA CRIAÇÃO DA PRÓXIMA VERSÃO DO EXECUTAVEL
 Antes de rodar, atualizar a versao em dois lugares (senao o build
 funciona, mas o app continua se identificando com o numero antigo por
 dentro):
+
 - ui.py -> __version__ = "X.X.X"
 - README.txt -> atualizar o changelog com o que mudou nessa versao
  
@@ -163,10 +172,10 @@ No terminal do VSCode, com a .venv (Python 3.11) ativada, trocar
 >>
 
  
-Remove-Item -Recurse -Force build, "Executavel vX.X.X.spec" -ErrorAction SilentlyContinue
-Remove-Item -Recurse -Force "Executavel\Executavel vX.X.X" -ErrorAction SilentlyContinue
- 
-.venv\Scripts\pyinstaller.exe --noconfirm --onedir --windowed --distpath ".\Executavel" --workpath ".\build" --name "Executavel vX.X.X" --collect-data matplotlib --hidden-import matplotlib.backends.backend_tkagg --add-data "README.txt;." main.py
+Remove-Item -Recurse -Force build, "Relatorios_interface v2.X.X.spec" -ErrorAction SilentlyContinue
+Remove-Item -Recurse -Force "Executavel\Relatorios_interface v2.X.X" -ErrorAction SilentlyContinue
+
+.venv\Scripts\pyinstaller.exe --noconfirm --onedir --windowed --distpath ".\Executavel" --workpath ".\build" --name "Relatorios_interface v2.X.X" --collect-data matplotlib --hidden-import matplotlib.backends.backend_tkagg --add-data "logs;Logs" --add-data "README.txt;." main.py
 
 
 
@@ -176,9 +185,10 @@ Remove-Item -Recurse -Force "Executavel\Executavel vX.X.X" -ErrorAction Silently
 Nao copiar mais a pasta "logs" pra dentro do executavel (o antigo passo
 "Copy-Item ... logs" das versoes anteriores nao se aplica mais). Como o
 caminho agora e fixo (C:\260462 - ver secao "CAMINHO BASE E LEITURA DOS
-LOGS" acima), o app sempre le e escreve em C:\260462\Logs,
-C:\260462\Auditoria e C:\260462\relatorios_exportacao, nao importa onde
-o .exe esteja instalado.
+LOGS" acima), o app sempre le e escreve em C:\260462\Logs (inclusive o
+auditoria.py, que grava o relatorios.log na mesma pasta) e
+C:\260462\relatorios_exportacao, nao importa onde o .exe esteja
+instalado.
  
 Isso muda a forma de distribuir o executavel: como as pastas de dados
 nao viajam mais dentro do .zip do executavel, o computador que for
@@ -245,4 +255,4 @@ Chama as funções do seu core.py
 
 Usa seu exportacao.py para salvar arquivos
 
-auditoria.py :  Criação dos logs de rastreamento 
+auditoria.py :  Criação dos logs de rastreamento
