@@ -225,7 +225,7 @@ def _extrair_dados_utilizadores(eventos):
 # FUNÇÃO: exportar_relatorio()
 # ============================================================
 
-def exportar_relatorio(conteudo, titulo, tipo="pdf", **kwargs):
+def exportar_relatorio(conteudo, titulo, tipo="pdf", **kwargs): # type: ignore
     dados_brutos = kwargs.get("dados_brutos", None)
     tipo_dados = kwargs.get("tipo_dados", "eventos")
     separador = kwargs.get("separador", None)
@@ -449,57 +449,57 @@ class ExportadorPDF(ExportadorBase):
             raise
     
     def _criar_estilos_pdf(self):
-        styles = getSampleStyleSheet()
+        styles = getSampleStyleSheet() # type: ignore
         
-        cor_primaria = HexColor("#1a5276")
-        cor_secundaria = HexColor("#2980b9")
-        cor_texto = HexColor("#1a2a4a")
+        cor_primaria = HexColor("#1a5276") # type: ignore
+        cor_secundaria = HexColor("#2980b9") # type: ignore
+        cor_texto = HexColor("#1a2a4a") # type: ignore
         
-        estilo_titulo = ParagraphStyle(
+        estilo_titulo = ParagraphStyle( # type: ignore
             "TituloPrincipal",
             parent=styles["Heading1"],
             fontSize=20,
-            alignment=TA_CENTER,
+            alignment=TA_CENTER, # type: ignore
             spaceAfter=6,
             textColor=cor_primaria,
             fontName="Helvetica-Bold",
         )
         
-        estilo_subtitulo = ParagraphStyle(
+        estilo_subtitulo = ParagraphStyle( # type: ignore
             "Subtitulo",
             parent=styles["Heading2"],
             fontSize=13,
-            alignment=TA_CENTER,
+            alignment=TA_CENTER, # type: ignore
             spaceAfter=12,
             textColor=cor_secundaria,
             fontName="Helvetica",
         )
         
-        estilo_normal = ParagraphStyle(
+        estilo_normal = ParagraphStyle( # type: ignore
             "NormalPersonalizado",
             parent=styles["Normal"],
             fontSize=8,
-            alignment=TA_LEFT,
+            alignment=TA_LEFT, # type: ignore
             textColor=cor_texto,
             fontName="Helvetica",
             leading=11,
         )
         
-        estilo_rodape = ParagraphStyle(
+        estilo_rodape = ParagraphStyle( # type: ignore
             "Rodape",
             parent=styles["Normal"],
             fontSize=7,
-            alignment=TA_CENTER,
-            textColor=HexColor("#5d6d7e"),
+            alignment=TA_CENTER, # type: ignore
+            textColor=HexColor("#5d6d7e"), # type: ignore
             fontName="Helvetica-Oblique",
             leading=10,
         )
         
-        estilo_secao = ParagraphStyle(
+        estilo_secao = ParagraphStyle( # type: ignore
             "Secao",
             parent=styles["Normal"],
             fontSize=9,
-            alignment=TA_LEFT,
+            alignment=TA_LEFT, # type: ignore
             textColor=cor_primaria,
             fontName="Helvetica-Bold",
             leading=12,
@@ -514,46 +514,46 @@ class ExportadorPDF(ExportadorBase):
         }
     
     def _exportar_padrao(self, conteudo, titulo, caminho):
-        doc = SimpleDocTemplate(
+        doc = SimpleDocTemplate( # type: ignore
             str(caminho),
-            pagesize=A4,
-            topMargin=1.5 * cm,
-            bottomMargin=1.5 * cm,
-            leftMargin=1.5 * cm,
-            rightMargin=1.5 * cm,
+            pagesize=A4, # type: ignore
+            topMargin=1.5 * cm, # type: ignore
+            bottomMargin=1.5 * cm, # type: ignore
+            leftMargin=1.5 * cm, # type: ignore
+            rightMargin=1.5 * cm, # type: ignore
         )
         
         story = []
         estilos = self._criar_estilos_pdf()
         
-        story.append(Paragraph("SISTEMA INTEGRADO DE SEGURANCA", estilos["titulo"]))
-        story.append(Paragraph(titulo, estilos["subtitulo"]))
+        story.append(Paragraph("SISTEMA INTEGRADO DE SEGURANCA", estilos["titulo"])) # type: ignore
+        story.append(Paragraph(titulo, estilos["subtitulo"])) # type: ignore
         
-        linha = Drawing(720, 4)
-        linha.add(Line(150, 2, 570, 2, strokeColor=HexColor("#1a5276"), strokeWidth=2))
+        linha = Drawing(720, 4) # type: ignore
+        linha.add(Line(150, 2, 570, 2, strokeColor=HexColor("#1a5276"), strokeWidth=2)) # type: ignore
         story.append(linha)
-        story.append(Spacer(1, 10))
+        story.append(Spacer(1, 10)) # type: ignore
         
         for linha_texto in conteudo.split("\n"):
             linha_texto = linha_texto.rstrip()
             if not linha_texto.strip():
-                story.append(Spacer(1, 3))
+                story.append(Spacer(1, 3)) # type: ignore
                 continue
-            story.append(Paragraph(linha_texto, estilos["normal"]))
-            story.append(Spacer(1, 2))
+            story.append(Paragraph(linha_texto, estilos["normal"])) # type: ignore
+            story.append(Spacer(1, 2)) # type: ignore
         
-        story.append(Spacer(1, 15))
-        linha_inferior = Drawing(720, 4)
-        linha_inferior.add(Line(0, 2, 720, 2, strokeColor=HexColor("#1a5276"), strokeWidth=1.5))
+        story.append(Spacer(1, 15)) # type: ignore
+        linha_inferior = Drawing(720, 4) # type: ignore
+        linha_inferior.add(Line(0, 2, 720, 2, strokeColor=HexColor("#1a5276"), strokeWidth=1.5)) # type: ignore
         story.append(linha_inferior)
-        story.append(Spacer(1, 6))
+        story.append(Spacer(1, 6)) # type: ignore
         
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        story.append(Paragraph(
+        story.append(Paragraph( # type: ignore
             "Relatório gerado automaticamente pelo Sistema Integrado de Segurança",
             estilos["rodape"]
         ))
-        story.append(Paragraph(
+        story.append(Paragraph( # type: ignore
             f"Documento: REL-{datetime.now().strftime('%Y%m%d')}-{timestamp[-4:]} | Versão: 1.0",
             estilos["rodape"]
         ))
@@ -785,7 +785,7 @@ class ExportadorPDF(ExportadorBase):
             
             # Linha decorativa superior
             linha_superior = Drawing(720, 6)
-            linha_superior.add(Rect(0, 0, 720, 6, fillColor=HexColorLib("#1a5276"), strokeColor=None))
+            linha_superior.add(Rect(0, 0, 720, 6, fillColor=HexColorLib("#1a5276"), strokeColor=None)) # type: ignore
             story.append(linha_superior)
             story.append(Spacer(1, 8))
             
@@ -825,7 +825,7 @@ class ExportadorPDF(ExportadorBase):
                 "SecaoDestaque",
                 parent=estilos["normal"],
                 fontSize=12,
-                alignment=TA_CENTER,
+                alignment=TA_CENTER, # type: ignore
                 fontName="Helvetica-Bold",
                 textColor=HexColorLib("#1a5276"),
                 leading=16,
@@ -882,7 +882,7 @@ class ExportadorPDF(ExportadorBase):
                     "ModuloTexto",
                     parent=estilos["normal"],
                     fontSize=10,
-                    alignment=TA_LEFT,
+                    alignment=TA_LEFT, # type: ignore
                     fontName="Helvetica",
                     textColor=HexColorLib("#2c3e50"),
                     leading=14,
@@ -1074,19 +1074,19 @@ class ExportadorPDF(ExportadorBase):
         # ============================================================
         # CONFIGURAÇÕES DE ESTILO
         # ============================================================
-        COR_PRIMARIA = HexColor("#1a5276")
-        COR_FUNDO_CABECALHO = HexColor("#1a5276")
-        COR_FUNDO_LINHA_PAR = HexColor("#f0f4fa")
-        COR_FUNDO_LINHA_IMPAR = HexColor("#ffffff")
+        COR_PRIMARIA = HexColor("#1a5276") # type: ignore
+        COR_FUNDO_CABECALHO = HexColor("#1a5276") # type: ignore
+        COR_FUNDO_LINHA_PAR = HexColor("#f0f4fa") # type: ignore
+        COR_FUNDO_LINHA_IMPAR = HexColor("#ffffff")# type: ignore
         COR_BORDA = colors.grey
         
-        doc = SimpleDocTemplate(
+        doc = SimpleDocTemplate( # type: ignore
             str(caminho),
-            pagesize=landscape(A4),
-            topMargin=1.5 * cm,
-            bottomMargin=1.5 * cm,
-            leftMargin=1.5 * cm,
-            rightMargin=1.5 * cm,
+            pagesize=landscape(A4),# type: ignore
+            topMargin=1.5 * cm,# type: ignore
+            bottomMargin=1.5 * cm,# type: ignore
+            leftMargin=1.5 * cm,# type: ignore
+            rightMargin=1.5 * cm,# type: ignore
         )
         
         story = []
@@ -1096,14 +1096,14 @@ class ExportadorPDF(ExportadorBase):
         # CABECALHO
         # ============================================================
         story.append(Paragraph("SISTEMA INTEGRADO DE SEGURANCA", estilos["titulo"]))
-        story.append(Spacer(1, 4))
+        story.append(Spacer(1, 4))# type: ignore
         story.append(Paragraph("RELATORIO DE UTILIZADORES", estilos["subtitulo"]))
-        story.append(Spacer(1, 8))
+        story.append(Spacer(1, 8))# type: ignore
         
-        linha = Drawing(720, 4)
-        linha.add(Line(150, 2, 570, 2, strokeColor=COR_PRIMARIA, strokeWidth=2))
+        linha = Drawing(720, 4)# type: ignore
+        linha.add(Line(150, 2, 570, 2, strokeColor=COR_PRIMARIA, strokeWidth=2))# type: ignore
         story.append(linha)
-        story.append(Spacer(1, 10))
+        story.append(Spacer(1, 10))# type: ignore
         
         # ============================================================
         # EXTRAI DADOS DO CONTEÚDO
@@ -1168,7 +1168,7 @@ class ExportadorPDF(ExportadorBase):
         
         resumo_completo = "   |   ".join(resumo_texto)
         story.append(Paragraph(resumo_completo, estilo_resumo))
-        story.append(Spacer(1, 10))
+        story.append(Spacer(1, 10))# type: ignore
         
         # ============================================================
         # PREPARA OS DADOS DA TABELA
@@ -1266,7 +1266,7 @@ class ExportadorPDF(ExportadorBase):
         # ADICIONA A TABELA
         # ============================================================
         if len(dados_tabela) > 1:
-            larguras = [1.0 * cm, 3.5 * cm, 2.0 * cm, 1.5 * cm, 2.5 * cm, 4.0 * cm]
+            larguras = [1.0 * cm, 3.5 * cm, 2.0 * cm, 1.5 * cm, 2.5 * cm, 4.0 * cm]# type: ignore
             tabela = Table(dados_tabela, colWidths=larguras, repeatRows=1)
             
             estilo_tabela = TableStyle([
@@ -1292,9 +1292,9 @@ class ExportadorPDF(ExportadorBase):
             ])
             
             cores_status = {
-                "ATIVO": HexColor("#2a8a4a"),
-                "DESATIVADO": HexColor("#cc8800"),
-                "EXCLUIDO": HexColor("#cc3333"),
+                "ATIVO": HexColor("#2a8a4a"),# type: ignore
+                "DESATIVADO": HexColor("#cc8800"),# type: ignore
+                "EXCLUIDO": HexColor("#cc3333"),# type: ignore
             }
             
             for i in range(1, len(dados_tabela)):
@@ -1311,7 +1311,7 @@ class ExportadorPDF(ExportadorBase):
             tabela.setStyle(estilo_tabela)
             story.append(tabela)
             
-            story.append(Spacer(1, 10))
+            story.append(Spacer(1, 10))# type: ignore
             estilo_contagem = ParagraphStyle(
                 "Contagem",
                 parent=estilos["normal"],
@@ -1331,14 +1331,14 @@ class ExportadorPDF(ExportadorBase):
         # ============================================================
         # LEGENDA
         # ============================================================
-        story.append(Spacer(1, 10))
+        story.append(Spacer(1, 10))# type: ignore
         estilo_legenda = ParagraphStyle(
             "Legenda",
             parent=estilos["normal"],
             fontSize=8,
             alignment=TA_LEFT,
             fontName="Helvetica",
-            textColor=HexColor("#5d6d7e"),
+            textColor=HexColor("#5d6d7e"),# type: ignore
             leading=11,
         )
         
@@ -1350,11 +1350,11 @@ class ExportadorPDF(ExportadorBase):
         # ============================================================
         # RODAPE
         # ============================================================
-        story.append(Spacer(1, 15))
-        linha_inferior = Drawing(720, 4)
-        linha_inferior.add(Line(0, 2, 720, 2, strokeColor=COR_PRIMARIA, strokeWidth=1.5))
+        story.append(Spacer(1, 15))# type: ignore
+        linha_inferior = Drawing(720, 4)# type: ignore
+        linha_inferior.add(Line(0, 2, 720, 2, strokeColor=COR_PRIMARIA, strokeWidth=1.5))# type: ignore
         story.append(linha_inferior)
-        story.append(Spacer(1, 6))
+        story.append(Spacer(1, 6))# type: ignore
         
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         story.append(Paragraph(
@@ -1381,28 +1381,28 @@ class ExportadorPDF(ExportadorBase):
         
         from core import estado_sistema
         
-        COR_PRIMARIA = HexColor("#1a5276")
-        COR_FUNDO_CABECALHO = HexColor("#1a5276")
-        COR_FUNDO_LINHA_PAR = HexColor("#f0f4fa")
-        COR_FUNDO_LINHA_IMPAR = HexColor("#ffffff")
+        COR_PRIMARIA = HexColor("#1a5276") # type: ignore
+        COR_FUNDO_CABECALHO = HexColor("#1a5276")# type: ignore
+        COR_FUNDO_LINHA_PAR = HexColor("#f0f4fa")# type: ignore
+        COR_FUNDO_LINHA_IMPAR = HexColor("#ffffff")# type: ignore
         COR_BORDA = colors.grey
         
-        doc = SimpleDocTemplate(
+        doc = SimpleDocTemplate(# type: ignore
             str(caminho),
-            pagesize=landscape(A4),
-            topMargin=1.5 * cm,
-            bottomMargin=1.5 * cm,
-            leftMargin=1.5 * cm,
-            rightMargin=1.5 * cm,
+            pagesize=landscape(A4),# type: ignore
+            topMargin=1.5 * cm,# type: ignore
+            bottomMargin=1.5 * cm,# type: ignore
+            leftMargin=1.5 * cm,# type: ignore
+            rightMargin=1.5 * cm,# type: ignore
         )
         
         story = []
         estilos = self._criar_estilos_pdf()
         
         story.append(Paragraph("SISTEMA INTEGRADO DE SEGURANCA", estilos["titulo"]))
-        story.append(Spacer(1, 4))
+        story.append(Spacer(1, 4))# type: ignore
         story.append(Paragraph(titulo, estilos["subtitulo"]))
-        story.append(Spacer(1, 12))
+        story.append(Spacer(1, 12))# type: ignore
         
         modulo_nome = titulo.replace("DETALHAMENTO DE EVENTOS POR MODULO - ", "").strip()
         
@@ -1452,7 +1452,7 @@ class ExportadorPDF(ExportadorBase):
         
         resumo_completo = "   |   ".join(resumo_texto)
         story.append(Paragraph(resumo_completo, estilo_resumo))
-        story.append(Spacer(1, 10))
+        story.append(Spacer(1, 10))# type: ignore
         
         estilo_celula = ParagraphStyle(
             "CelulaTexto",
@@ -1515,7 +1515,7 @@ class ExportadorPDF(ExportadorBase):
                 dados_tabela.append(linha)
         
         if len(dados_tabela) > 1:
-            larguras = [2.2 * cm, 1.8 * cm, 5.5 * cm, 2.0 * cm, 1.8 * cm]
+            larguras = [2.2 * cm, 1.8 * cm, 5.5 * cm, 2.0 * cm, 1.8 * cm]# type: ignore
             tabela = Table(dados_tabela, colWidths=larguras, repeatRows=1)
             
             estilo_tabela = TableStyle([
@@ -1541,9 +1541,9 @@ class ExportadorPDF(ExportadorBase):
             ])
             
             cores_severidade = {
-                "CRITICAL": HexColor("#cc3333"),
-                "WARNING": HexColor("#cc8800"),
-                "INFO": HexColor("#1a6c9a"),
+                "CRITICAL": HexColor("#cc3333"),# type: ignore
+                "WARNING": HexColor("#cc8800"),# type: ignore
+                "INFO": HexColor("#1a6c9a"),# type: ignore
             }
             
             for i in range(1, len(dados_tabela)):
@@ -1553,14 +1553,14 @@ class ExportadorPDF(ExportadorBase):
                     if sev_upper in cores_severidade:
                         estilo_tabela.add('TEXTCOLOR', (4, i), (4, i), cores_severidade[sev_upper])
                         if sev_upper == "CRITICAL":
-                            estilo_tabela.add('BACKGROUND', (4, i), (4, i), HexColor("#ffebee"))
+                            estilo_tabela.add('BACKGROUND', (4, i), (4, i), HexColor("#ffebee"))# type: ignore
                         elif sev_upper == "WARNING":
-                            estilo_tabela.add('BACKGROUND', (4, i), (4, i), HexColor("#fff8e1"))
+                            estilo_tabela.add('BACKGROUND', (4, i), (4, i), HexColor("#fff8e1"))# type: ignore
             
             tabela.setStyle(estilo_tabela)
             story.append(tabela)
             
-            story.append(Spacer(1, 10))
+            story.append(Spacer(1, 10))# type: ignore
             estilo_contagem = ParagraphStyle(
                 "Contagem",
                 parent=estilos["normal"],
@@ -1577,11 +1577,11 @@ class ExportadorPDF(ExportadorBase):
         else:
             story.append(Paragraph("Nenhum evento encontrado para este módulo.", estilos["normal"]))
         
-        story.append(Spacer(1, 20))
-        linha_inferior = Drawing(720, 4)
-        linha_inferior.add(Line(0, 2, 720, 2, strokeColor=COR_PRIMARIA, strokeWidth=1.5))
+        story.append(Spacer(1, 20))# type: ignore
+        linha_inferior = Drawing(720, 4)# type: ignore
+        linha_inferior.add(Line(0, 2, 720, 2, strokeColor=COR_PRIMARIA, strokeWidth=1.5))# type: ignore
         story.append(linha_inferior)
-        story.append(Spacer(1, 6))
+        story.append(Spacer(1, 6))# type: ignore
         
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         story.append(Paragraph(
@@ -1744,7 +1744,7 @@ class ExportadorPDF(ExportadorBase):
             # ============================================================
             # Linha decorativa superior
             linha_superior = Drawing(720, 6)
-            linha_superior.add(Rect(0, 0, 720, 6, fillColor=HexColorLib("#1a5276"), strokeColor=None))
+            linha_superior.add(Rect(0, 0, 720, 6, fillColor=HexColorLib("#1a5276"), strokeColor=None))# type: ignore
             story.append(linha_superior)
             story.append(Spacer(1, 8))
             
