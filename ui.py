@@ -85,7 +85,7 @@ import auditoria
 # Atualize APENAS este valor a cada alteracao no projeto.
 # Ele e usado no titulo da janela e no cabecalho da tela inicial.
 
-__version__ = "2.1.0"
+__version__ = "2.1.1"
 
 # ============================================================
 # CLASSES DE RELATORIOS (Interface) - IGUAL AO ORIGINAL
@@ -835,6 +835,9 @@ class RelatorioDetalhes(RelatorioBase):
             return None
         except Exception as e:
             self.parent._log_terminal(f"ERRO ao exportar CSV por modulo: {e}", "ERRO")
+            self.parent._registrar_auditoria(
+                "FALHA AO EXPORTAR CSV (Detalhamento)", str(e), severidade="CRITICO"
+            )
             messagebox.showerror("Erro", f"Erro ao exportar CSV: {e}")
             traceback.print_exc()
             return None
@@ -1563,6 +1566,9 @@ class RelatorioUtilizadores(RelatorioBase):
             self.parent._log_terminal(
                 f"ERRO ao exportar CSV de utilizadores: {e}", "ERRO"
             )
+            self.parent._registrar_auditoria(
+                "FALHA AO EXPORTAR CSV (Utilizadores)", str(e), severidade="CRITICO"
+            )
             messagebox.showerror("Erro", f"Erro ao exportar CSV: {e}")
             traceback.print_exc()
             return None
@@ -1643,14 +1649,26 @@ class RelatorioRelerLogs:
                 f"Logs recarregados com sucesso! {len(self.parent.eventos)} eventos",
                 "SUCESSO",
             )
-            self.parent._registrar_auditoria(
-                "RELEU LOGS", f"{len(self.parent.eventos)} eventos carregados"
-            )
+            total_recarregado = len(self.parent.eventos)
+            if total_recarregado == 0:
+                # Releu mas nao achou nenhum evento - trata como problema real
+                self.parent._registrar_auditoria(
+                    "RELEU LOGS - NENHUM EVENTO ENCONTRADO",
+                    "Verificar pasta Logs",
+                    severidade="CRITICO",
+                )
+            else:
+                self.parent._registrar_auditoria(
+                    "RELEU LOGS", f"{total_recarregado} eventos carregados"
+                )
             messagebox.showinfo(
                 "Sucesso", f"{len(self.parent.eventos)} logs recarregados com sucesso!"
             )
         except Exception as e:
             self.parent._log_terminal(f"ERRO ao recarregar logs: {e}", "ERRO")
+            self.parent._registrar_auditoria(
+                "FALHA AO RELER LOGS", str(e), severidade="CRITICO"
+            )
             self.parent._escrever_saida(f"\nErro: {e}\n", "error")
             self.parent._atualizar_status("Erro ao recarregar", "erro")
             traceback.print_exc()
@@ -1742,9 +1760,13 @@ class InterfaceRelatorios:
         cor = cores.get(nivel, "")
         print(f"[{timestamp}] {cor}{nivel}{reset} - {mensagem}")
 
-    def _registrar_auditoria(self, acao, detalhes=""):
-        """Registra uma acao do sistema no log de auditoria (auditoria/auditoria.log),
+    def _registrar_auditoria(self, acao, detalhes="", severidade="INFO"):
+        """Registra uma acao do sistema no log de auditoria (Logs/auditoria.log),
         delegando pro modulo auditoria.py (independente do core.py).
+
+        severidade: "CRITICO" (falha real - exportacao/releitura que nao
+        deu certo), "AVISO" (concluiu mas com algo fora do normal) ou
+        "INFO" (sucesso normal - padrao).
 
         Isto e separado dos logs que o sistema analisa - e um registo de
         quem usou o proprio sistema, e quando (exportacoes, releitura de
@@ -1752,7 +1774,7 @@ class InterfaceRelatorios:
         original (por isso o try/except silencioso, so avisando no terminal).
         """
         try:
-            auditoria.registar(acao, detalhes)
+            auditoria.registar(acao, detalhes, severidade=severidade)
         except Exception as e:
             self._log_terminal(
                 f"Nao foi possivel gravar log de auditoria: {e}", "AVISO"
@@ -1919,6 +1941,7 @@ class InterfaceRelatorios:
 
         except Exception as e:
             self._log_terminal(f"ERRO ao exportar CSV do popup: {e}", "ERRO")
+            self._registrar_auditoria("FALHA AO EXPORTAR CSV", str(e), severidade="CRITICO")
             messagebox.showerror("Erro", f"Erro ao exportar CSV: {e}")
             traceback.print_exc()
             return None
@@ -1956,6 +1979,7 @@ class InterfaceRelatorios:
 
         except Exception as e:
             self._log_terminal(f"ERRO ao exportar PDF: {e}", "ERRO")
+            self._registrar_auditoria("FALHA AO EXPORTAR PDF", str(e), severidade="CRITICO")
             traceback.print_exc()
             messagebox.showerror(
                 "Erro", f"Erro ao exportar PDF: {e}\n\n{traceback.format_exc()}"
@@ -1991,6 +2015,9 @@ class InterfaceRelatorios:
 
         except Exception as e:
             self._log_terminal(f"ERRO ao exportar PDF da consulta: {e}", "ERRO")
+            self._registrar_auditoria(
+                "FALHA AO EXPORTAR PDF (Consulta)", str(e), severidade="CRITICO"
+            )
             traceback.print_exc()
             messagebox.showerror(
                 "Erro", f"Erro ao exportar PDF: {e}\n\n{traceback.format_exc()}"
@@ -2028,6 +2055,9 @@ class InterfaceRelatorios:
 
         except Exception as e:
             self._log_terminal(f"ERRO ao exportar PDF do detalhamento: {e}", "ERRO")
+            self._registrar_auditoria(
+                "FALHA AO EXPORTAR PDF (Detalhamento)", str(e), severidade="CRITICO"
+            )
             traceback.print_exc()
             messagebox.showerror(
                 "Erro", f"Erro ao exportar PDF: {e}\n\n{traceback.format_exc()}"
@@ -2063,6 +2093,9 @@ class InterfaceRelatorios:
 
         except Exception as e:
             self._log_terminal(f"ERRO ao exportar PDF Analitico: {e}", "ERRO")
+            self._registrar_auditoria(
+                "FALHA AO EXPORTAR PDF (Analitico)", str(e), severidade="CRITICO"
+            )
             traceback.print_exc()
             messagebox.showerror(
                 "Erro", f"Erro ao exportar PDF: {e}\n\n{traceback.format_exc()}"
@@ -2401,11 +2434,21 @@ class InterfaceRelatorios:
             self._log_terminal("=" * 50, "DESTAQUE")
             self._log_terminal("CARREGAMENTO CONCLUIDO", "SUCESSO")
             self._log_terminal("=" * 50, "DESTAQUE")
-            self._registrar_auditoria(
-                "INICIOU O SISTEMA", f"{len(self.eventos)} eventos carregados"
-            )
+            if len(self.eventos) == 0:
+                self._registrar_auditoria(
+                    "INICIOU O SISTEMA - NENHUM EVENTO ENCONTRADO",
+                    f"Verificar pasta: {PASTA_LOGS}",
+                    severidade="CRITICO",
+                )
+            else:
+                self._registrar_auditoria(
+                    "INICIOU O SISTEMA", f"{len(self.eventos)} eventos carregados"
+                )
         except Exception as e:
             self._log_terminal(f"ERRO ao carregar logs: {e}", "ERRO")
+            self._registrar_auditoria(
+                "FALHA AO INICIAR O SISTEMA", str(e), severidade="CRITICO"
+            )
             self._atualizar_status("Erro ao carregar", "erro")
             self._escrever_saida(f"Erro ao carregar logs: {e}\n", "error")
             traceback.print_exc()

@@ -1,5 +1,14 @@
-RELATORIOS.PY v2.1.0 - SISTEMA DE GERACAO DE RELATORIOS
+RELATORIOS.PY v2.1.1 - SISTEMA DE GERACAO DE RELATORIOS
  
+
+ Nova atualização v2.1.1
+ -----------------------
+
+ - Mudamos pasta caminho do Log 
+ - Mudamos jeito que esta gerando os logs com as regras repassadas para os demais com severidade
+ » AAAA-MM-DD HH:MM:SS [SEVERIDADE] MODULO NOME_DO_MODULO: descricao do evento 
+
+ »» atualização maior anterior para rastreamento. »»
  
 ATUALIZACAO DA VERSAO v2.1.0
 -----------------------------
@@ -49,7 +58,7 @@ ALTERAÇÃO DE VERSIONAMENTO
 ---------------------------
 
 ui.py ->
-__version__ = "v2.1.0"
+__version__ = "v2.1.1"
 
 
 CAMINHO LEITURA DOS LOGS:

@@ -1,16 +1,18 @@
 """
 auditoria.py - Log de auditoria da propria aplicacao
 
-Diferente da pasta "Logs" (que guarda os logs de seguranca que o sistema
-ANALISA), este arquivo registra as acoes de quem USA o sistema: quem
-exportou o que, quando releu os logs, etc.
+Definição dos critérios de auditoria, para que todas as ações de auditoria sejam registradas
+
+AAAA-MM-DD HH:MM:SS [SEVERIDADE] MODULO NOME_DO_MODULO: descricao
+
+As acoes de auditoria sao registadas como MODULO RELATORIOS (o modulo de
+relatorios e quem gera essas acoes).
 
 Independente do core.py de proposito - nao importa nada de la, mas usa
-a MESMA pasta base fixa (C:\\260462) que o core.py usa pra "Logs" e
-"relatorios_exportacao", pra ficar tudo junto no mesmo lugar.
+a MESMA pasta base fixa (C:\\260462).
 
-A pasta "Auditoria" so e criada na hora que alguma acao realmente
-acontece (registar()) - nao é criada so por importar este modulo.
+A pasta "Logs" so e criada na hora que alguma acao realmente acontece
+(registar()) - nao e criada so por importar este modulo.
 """
 
 import getpass
@@ -20,21 +22,33 @@ from datetime import datetime
 # Mesma pasta base fixa usada no core.py
 DIRETORIO_BASE = Path(r"C:\260462")
 
-PASTA_AUDITORIA = DIRETORIO_BASE / "Auditoria"
-FICHEIRO_AUDITORIA = PASTA_AUDITORIA / "auditoria.log"
+# Mesma pasta "Logs" que os demais modulos usam (nao uma pasta separada)
+PASTA_AUDITORIA = DIRETORIO_BASE / "Logs"
+FICHEIRO_AUDITORIA = PASTA_AUDITORIA / "relatorios.log"
+
+NOME_MODULO = "RELATORIOS"
 
 
-def registar(acao, detalhes=""):
-    """Regista uma acao no log de auditoria. Cria a pasta na hora, se
-    ainda nao existir."""
+def registar(acao, detalhes="", severidade="INFO"):
+    """Regista uma acao no log de auditoria, no MESMO formato exigido dos
+    demais modulos. Cria a pasta na hora, se ainda nao existir.
+
+    severidade: "CRITICO", "AVISO" ou "INFO" (INFO por padrao - so usar
+    CRITICO/AVISO se a propria acao de auditoria representar um problema
+    real, ex: falha ao gerar um relatorio).
+    """
     if not PASTA_AUDITORIA.exists():
         PASTA_AUDITORIA.mkdir(parents=True, exist_ok=True)
 
     utilizador = getpass.getuser()
-    data_hora = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-    linha = f"[{data_hora}] {utilizador} | {acao}"
+    data_hora = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    descricao = acao
     if detalhes:
-        linha += f" | {detalhes}"
+        descricao += f": {detalhes}"
+    descricao += f" (utilizador '{utilizador}')"
+
+    linha = f"{data_hora} [{severidade}] MODULO {NOME_MODULO}: {descricao}"
 
     with open(FICHEIRO_AUDITORIA, "a", encoding="utf-8") as ficheiro:
         ficheiro.write(linha + "\n")
